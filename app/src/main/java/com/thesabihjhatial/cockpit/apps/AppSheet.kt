@@ -67,6 +67,7 @@ fun AppSheet(
     apps: List<AppInfo>,
     docked: Set<String>,
     dockFull: Boolean,
+    launching: String?,
     onDock: (AppInfo) -> Unit,
     onSelect: (AppInfo) -> Unit,
     onUndock: (AppInfo) -> Unit,
@@ -111,7 +112,8 @@ fun AppSheet(
                         else -> listOf(TileAction(if (dockFull) fullLabel else addLabel, onSelect = { onDock(app) }, enabled = !dockFull))
                     },
                     badge = if (isDocked) badge else null,
-                    enabled = sheet.isOpen || !sheet.isVisible,
+                    enabled = (sheet.isOpen || !sheet.isVisible) && launching == null,
+                    loading = app.id == launching,
                 )
             }
         }

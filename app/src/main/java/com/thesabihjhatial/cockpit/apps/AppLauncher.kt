@@ -4,11 +4,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 
-fun Context.launchApp(id: String) {
-    val component = ComponentName.unflattenFromString(id) ?: return
+fun Context.launchApp(id: String): Boolean {
+    val component = ComponentName.unflattenFromString(id) ?: return false
     val intent = Intent(Intent.ACTION_MAIN)
         .addCategory(Intent.CATEGORY_LAUNCHER)
         .setComponent(component)
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    runCatching { startActivity(intent) }
+    return runCatching { startActivity(intent) }.isSuccess
 }

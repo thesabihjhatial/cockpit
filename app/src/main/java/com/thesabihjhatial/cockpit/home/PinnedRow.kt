@@ -66,6 +66,7 @@ private fun EmptySlot(onClick: () -> Unit) {
 
 @Composable
 fun PinnedRow(
+    launching: String?,
     pinned: List<AppInfo?>,
     onAdd: (Int) -> Unit,
     onLaunch: (AppInfo) -> Unit,
@@ -85,6 +86,8 @@ fun PinnedRow(
                         onClick = { onLaunch(app) },
                         modifier = Modifier.fillMaxSize(),
                         actions = listOf(TileAction(removeLabel, onSelect = { onUnpin(slot) })),
+                        enabled = launching == null,
+                        loading = app.id == launching,
                     )
                 }
             }

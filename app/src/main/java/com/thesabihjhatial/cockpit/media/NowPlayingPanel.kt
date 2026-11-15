@@ -1,7 +1,5 @@
 package com.thesabihjhatial.cockpit.media
 
-import android.content.Intent
-import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,9 +33,8 @@ import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 private val ColumnGap = 16.dp
 
 @Composable
-private fun AccessPrompt(modifier: Modifier = Modifier) {
+private fun AccessPrompt(launching: String?, onAllow: () -> Unit, modifier: Modifier = Modifier) {
     val colors = LocalCockpitColors.current
-    val context = LocalContext.current
 
     Row(
         modifier = modifier,
@@ -54,9 +51,7 @@ private fun AccessPrompt(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .clip(CircleShape)
                 .background(colors.surface)
-                .clickable {
-                    runCatching { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-                }
+                .clickable(enabled = launching == null, onClick = onAllow)
                 .padding(horizontal = 28.dp, vertical = 16.dp),
         ) {
             Text(
@@ -138,6 +133,8 @@ private fun Info(nowPlaying: NowPlaying, modifier: Modifier = Modifier) {
 @Composable
 fun NowPlayingPanel(
     media: MediaState,
+    launching: String?,
+    onAllow: () -> Unit,
     onExpand: () -> Unit,
     modifier: Modifier = Modifier,
     artModifier: Modifier = Modifier,
@@ -145,7 +142,7 @@ fun NowPlayingPanel(
     val nowPlaying = media.nowPlaying
 
     when {
-        nowPlaying == null && !media.granted -> AccessPrompt(modifier)
+        nowPlaying == null && !media.granted -> AccessPrompt(launching, onAllow, modifier)
         nowPlaying == null -> Box(modifier)
         else -> BoxWithConstraints(modifier) {
             val column = (maxWidth - ColumnGap * 3) / 4

@@ -3,6 +3,7 @@ package com.thesabihjhatial.cockpit.home
 import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -31,7 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.thesabihjhatial.cockpit.apps.AppInfo
 import com.thesabihjhatial.cockpit.apps.AppSheet
 import com.thesabihjhatial.cockpit.apps.SheetState
 import com.thesabihjhatial.cockpit.apps.launchApp
@@ -43,11 +47,21 @@ import com.thesabihjhatial.cockpit.media.rememberMediaState
 import com.thesabihjhatial.cockpit.media.rememberSpectrumAccess
 import com.thesabihjhatial.cockpit.network.rememberWifiStatus
 import com.thesabihjhatial.cockpit.permission.rememberPermissions
+import com.thesabihjhatial.cockpit.settings.BluetoothAccessId
+import com.thesabihjhatial.cockpit.settings.MediaAccessId
+import com.thesabihjhatial.cockpit.settings.SettingsId
+import com.thesabihjhatial.cockpit.settings.openNotificationAccessSettings
+import com.thesabihjhatial.cockpit.settings.openSystemSettings
+import com.thesabihjhatial.cockpit.ui.FadeInDelayMs
+import com.thesabihjhatial.cockpit.ui.FadeInMs
 import com.thesabihjhatial.cockpit.ui.FadeThrough
+import com.thesabihjhatial.cockpit.ui.FadeThroughEnter
+import com.thesabihjhatial.cockpit.ui.FadeThroughExit
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import kotlinx.coroutines.delay
 
 private const val ArtKey = "art"
-private const val ArtMs = 250
+private const val LaunchTimeoutMs = 10000L
 
 private val FlingVelocity = 500.dp
 private val RowGap = 16.dp
@@ -74,6 +88,7 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val slots by viewModel.slots.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
+    var launching by remember { mutableStateOf<String?>(null) }
     var picking by remember { mutableStateOf<Int?>(null) }
     val sheet = remember { SheetState(scope) { picking = null } }
     val dragState = rememberDraggableState { sheet.dragBy(it) }
@@ -92,6 +107,29 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     }
 
     LaunchedEffect(nowPlaying == null) { if (nowPlaying == null) expanded = false }
+
+    LaunchedEffect(launching) {
+        if (launching != null) {
+            delay(LaunchTimeoutMs)
+            launching = null
+        }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { launching = null }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        launching = null
+        sheet.close()
+    }
+
+    val open = { id: String, start: () -> Boolean ->
+        if (launching == null) {
+            launching = id
+            if (!start()) launching = null
+        }
+    }
+
+    val launch = { app: AppInfo -> open(app.id) { context.launchApp(app.id) } }
 
     LaunchedEffect(ready) { if (ready) permissions.request() }
 
@@ -122,7 +160,7 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                 val artModifier = Modifier.sharedElement(
                     state = rememberSharedContentState(key = ArtKey),
                     animatedVisibilityScope = this@AnimatedContent,
-                    boundsTransform = { _, _ -> tween(ArtMs, easing = FastOutSlowInEasing) },
+                    boundsTransform = { _, _ -> tween(FadeInMs, FadeInDelayMs, FastOutSlowInEasing) },
                 )
                 Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RowGap)) {
                     if (isExpanded && nowPlaying != null) {
@@ -139,21 +177,27 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                             bluetoothAccess = bluetoothAccess,
                             bluetoothStatus = bluetoothStatus,
                             wifi = wifi,
+                            launching = launching,
+                            onBluetooth = { open(BluetoothAccessId) { bluetoothAccess.request(); true } },
+                            onSettings = { open(SettingsId) { context.openSystemSettings() } },
                             modifier = Modifier.fillMaxWidth().height(rowHeight),
                         )
                         NowPlayingPanel(
                             media = media,
+                            launching = launching,
+                            onAllow = { open(MediaAccessId) { context.openNotificationAccessSettings() } },
                             onExpand = { expanded = true },
                             modifier = Modifier.fillMaxWidth().height(rowHeight * 2 + RowGap),
                             artModifier = artModifier,
                         )
                         PinnedRow(
+                            launching = launching,
                             pinned = pinned,
                             onAdd = {
                                 picking = it
                                 sheet.open()
                             },
-                            onLaunch = { context.launchApp(it.id) },
+                            onLaunch = launch,
                             onUnpin = viewModel::unpin,
                             modifier = Modifier.fillMaxWidth().height(rowHeight),
                         )
@@ -161,15 +205,21 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                 }
             }
         }
-        if (!showExpanded) {
+        AnimatedVisibility(visible = !showExpanded, enter = FadeThroughEnter, exit = FadeThroughExit) {
             AppSheet(
                 apps = apps,
                 docked = slots.filterNotNull().toSet(),
                 dockFull = slots.all { it != null },
+                launching = launching,
                 onDock = { viewModel.dock(it.id) },
                 onSelect = { app ->
-                    picking?.let { viewModel.pin(app.id, it) } ?: context.launchApp(app.id)
-                    sheet.close()
+                    val slot = picking
+                    if (slot == null) {
+                        launch(app)
+                    } else {
+                        viewModel.pin(app.id, slot)
+                        sheet.close()
+                    }
                 },
                 onUndock = { viewModel.undock(it.id) },
                 sheet = sheet,

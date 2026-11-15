@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,12 +27,12 @@ import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.bluetooth.BluetoothStatus
 import com.thesabihjhatial.cockpit.network.WifiStatus
 import com.thesabihjhatial.cockpit.permission.PermissionAccess
-import com.thesabihjhatial.cockpit.settings.openSystemSettings
+import com.thesabihjhatial.cockpit.settings.SettingsId
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 
 @Composable
-private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?) {
+private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?, launching: String?, onRequest: () -> Unit) {
     val colors = LocalCockpitColors.current
 
     when {
@@ -40,7 +42,7 @@ private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?) {
             description = stringResource(R.string.bluetooth_allow),
             iconColor = colors.muted,
             labelColor = colors.muted,
-            modifier = Modifier.clickable(onClick = access.request),
+            modifier = Modifier.clickable(enabled = launching == null, onClick = onRequest),
         )
         status is BluetoothStatus.Connected -> StatusChip(
             icon = CockpitIcons.Bluetooth,
@@ -60,23 +62,33 @@ private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?) {
 }
 
 @Composable
-private fun SettingsButton() {
-    val context = LocalContext.current
+private fun SettingsButton(launching: String?, onClick: () -> Unit) {
+    val colors = LocalCockpitColors.current
+    val label = stringResource(R.string.settings_title)
 
     Box(
         modifier = Modifier
             .offset(x = 14.dp)
             .size(56.dp)
             .clip(CircleShape)
-            .clickable { context.openSystemSettings() },
+            .clickable(enabled = launching == null, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = CockpitIcons.Settings,
-            contentDescription = stringResource(R.string.settings_title),
-            modifier = Modifier.size(24.dp),
-            tint = LocalCockpitColors.current.text,
-        )
+        if (launching == SettingsId) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp).semantics { contentDescription = label },
+                color = colors.text,
+                strokeWidth = 3.dp,
+                trackColor = colors.line,
+            )
+        } else {
+            Icon(
+                imageVector = CockpitIcons.Settings,
+                contentDescription = label,
+                modifier = Modifier.size(24.dp),
+                tint = colors.text,
+            )
+        }
     }
 }
 
@@ -111,6 +123,9 @@ fun StatusRow(
     bluetoothAccess: PermissionAccess,
     bluetoothStatus: BluetoothStatus?,
     wifi: WifiStatus,
+    launching: String?,
+    onBluetooth: () -> Unit,
+    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -118,9 +133,9 @@ fun StatusRow(
         horizontalArrangement = Arrangement.spacedBy(28.dp, Alignment.End),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BluetoothChip(bluetoothAccess, bluetoothStatus)
+        BluetoothChip(bluetoothAccess, bluetoothStatus, launching, onBluetooth)
         WifiChip(wifi)
-        SettingsButton()
+        SettingsButton(launching, onSettings)
     }
 }
 

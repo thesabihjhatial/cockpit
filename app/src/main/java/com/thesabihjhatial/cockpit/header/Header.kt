@@ -24,6 +24,9 @@ fun Header(
     bluetoothAccess: PermissionAccess,
     bluetoothStatus: BluetoothStatus?,
     wifi: WifiStatus,
+    launching: String?,
+    onBluetooth: () -> Unit,
+    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val now by rememberNow()
@@ -48,6 +51,9 @@ fun Header(
                 bluetoothAccess = bluetoothAccess,
                 bluetoothStatus = bluetoothStatus,
                 wifi = wifi,
+                launching = launching,
+                onBluetooth = onBluetooth,
+                onSettings = onSettings,
                 modifier = Modifier.weight(1f),
             )
         }

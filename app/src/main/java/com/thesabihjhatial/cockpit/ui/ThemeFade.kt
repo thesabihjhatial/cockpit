@@ -24,9 +24,10 @@ fun ThemeFade(night: Boolean, content: @Composable (night: Boolean) -> Unit) {
     val veil = remember { Animatable(0f) }
 
     LaunchedEffect(night) {
-        if (night == shown) return@LaunchedEffect
-        veil.animateTo(1f, tween(InMs, easing = LinearEasing))
-        shown = night
+        if (night != shown) {
+            veil.animateTo(1f, tween(InMs, easing = LinearEasing))
+            shown = night
+        }
         veil.animateTo(0f, tween(OutMs, easing = LinearEasing))
     }
 

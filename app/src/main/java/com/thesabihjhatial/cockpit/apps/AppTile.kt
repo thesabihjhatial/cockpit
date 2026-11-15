@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -60,6 +61,7 @@ fun AppTile(
     actions: List<TileAction> = emptyList(),
     badge: String? = null,
     enabled: Boolean = true,
+    loading: Boolean = false,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
 
@@ -70,7 +72,7 @@ fun AppTile(
                 .clip(TileShape)
                 .background(app.color)
                 .combinedClickable(
-                    enabled = enabled,
+                    enabled = enabled && !loading,
                     onClick = onClick,
                     onLongClick = if (actions.isEmpty()) null else ({ menuOpen = true }),
                 ),
@@ -81,12 +83,23 @@ fun AppTile(
                 horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Image(
-                    bitmap = app.icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    colorFilter = if (app.tinted) ColorFilter.tint(Color.White) else null,
-                )
+                if (loading) {
+                    Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp),
+                            color = Color.White,
+                            strokeWidth = 4.dp,
+                            trackColor = Color.White.copy(alpha = 0.25f),
+                        )
+                    }
+                } else {
+                    Image(
+                        bitmap = app.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        colorFilter = if (app.tinted) ColorFilter.tint(Color.White) else null,
+                    )
+                }
                 Text(
                     text = app.label,
                     color = Color.White,

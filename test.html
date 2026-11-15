@@ -127,6 +127,10 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 .tile { position: relative; width: 100%; height: 100%; min-width: 0; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 16px; color: #ffffff; }
 .tile:active { filter: brightness(0.92); }
+.tile:disabled { cursor: default; filter: none; }
+.gear .spinner { width: 24px; height: 24px; border-width: 3px; border-color: rgba(127, 127, 127, 0.3); border-top-color: currentColor; }
+.gear:disabled { cursor: default; }
+.spinner { width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.25); border-top-color: #ffffff; border-radius: 50%; animation: spin 800ms linear infinite; }
 .tile-icon svg { width: 48px; height: 48px; display: block; }
 .tile-icon { width: 56px; height: 56px; flex: none; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 38px; font-weight: 800; letter-spacing: -0.02em; }
 .tile-name { min-width: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -198,6 +202,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .splash-bar i { display: block; width: 100%; height: 100%; border-radius: 2px; background: var(--accent); transform-origin: left center; animation: fill 3s linear forwards; }
 .needle { transform-box: view-box; transform-origin: 24px 24px; animation: sweep 3s linear forwards; }
 
+@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade-in { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes eq { 0% { transform: scaleY(var(--lo)); } 50% { transform: scaleY(1); } 100% { transform: scaleY(var(--lo)); } }
@@ -302,6 +307,7 @@ const FadeInMs = 175;
 const FadeOutMs = 75;
 const FlingVelocity = 0.5;
 const HoldMs = 400;
+const LaunchMs = 1500;
 const Months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const NightEndHour = 6;
 const NightStartHour = 18;
@@ -370,6 +376,7 @@ const state = {
   bluetoothPermission: true,
   expanded: false,
   headlights: false,
+  launching: null,
   mediaAccess: true,
   mediaVisible: params.get('media') !== 'idle',
   night: params.get('theme') ? params.get('theme') === 'night' : isNight(new Date().getHours()),
@@ -383,11 +390,13 @@ const state = {
   wifiName: "Sabih's Infinix HOT 50i",
 };
 
-const view = { lastMinute: '', scale: 1, suppressClick: false, dipping: false, switching: false };
+const view = { lastMinute: '', scale: 1, suppressClick: false, dipping: false, switching: false, wantNight: false, drawerFade: null };
 
 function applyExpanded() {
   dom.home.classList.toggle('expanded', state.expanded);
   dom.drawer.style.visibility = state.expanded ? 'hidden' : '';
+  if (view.drawerFade) view.drawerFade.cancel();
+  view.drawerFade = state.expanded ? null : dom.drawer.animate({ opacity: [0, 1] }, { duration: FadeInMs, delay: FadeOutMs, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'backwards' });
   syncPeek();
 }
 
@@ -423,6 +432,7 @@ function bars() {
 function buildGrid() {
   dom.grid.innerHTML = Apps.map(([name, color]) => tile(name, color, true)).join('');
   dom.drawerTitle.innerHTML = '<b>All your apps</b><span>' + Apps.length + '</span>';
+  syncLaunching();
 }
 
 function clamp(value) {
@@ -501,6 +511,17 @@ function isNight(hour) {
   return hour >= NightStartHour || hour < NightEndHour;
 }
 
+function launchApp(name) {
+  if (state.launching) return;
+  state.launching = name;
+  syncLaunching();
+  setTimeout(() => {
+    state.launching = null;
+    syncLaunching();
+    if (state.open) closeDrawer();
+  }, LaunchMs);
+}
+
 function loadPinned() {
   try {
     const saved = JSON.parse(localStorage.getItem(StorageKey)) || DefaultPinned;
@@ -546,6 +567,7 @@ function renderDock() {
       return '<div class="slot">' + content + '</div>';
     })
     .join('');
+  syncLaunching();
 }
 
 function renderExpanded() {
@@ -599,6 +621,7 @@ function renderHeader() {
     '<div class="status">' + bluetooth + wifi + '<button class="gear" data-action="settings" aria-label="Settings">' + icon('settings') + '</button></div>' +
     '</div>';
   view.lastMinute = hour + ':' + minutes;
+  syncLaunching();
 }
 
 function renderNow() {
@@ -647,6 +670,7 @@ function setExpanded(expanded) {
   const from = document.querySelector(expanded ? '.art' : '.x-art');
   const start = from ? from.getBoundingClientRect() : null;
   dom.home.classList.add('fading-out');
+  if (expanded) view.drawerFade = dom.drawer.animate({ opacity: [1, 0] }, { duration: FadeOutMs, easing: 'ease-out', fill: 'forwards' });
   setTimeout(() => {
     state.expanded = expanded;
     applyExpanded();
@@ -661,6 +685,7 @@ function setExpanded(expanded) {
 }
 
 function setNight(night) {
+  view.wantNight = night;
   if (state.night === night || view.dipping) return;
   view.dipping = true;
   dom.veil.style.transitionDuration = ThemeInMs + 'ms';
@@ -672,6 +697,7 @@ function setNight(night) {
     dom.veil.style.opacity = 0;
     setTimeout(() => {
       view.dipping = false;
+      if (view.wantNight !== state.night) setNight(view.wantNight);
     }, ThemeOutMs);
   }, ThemeInMs);
 }
@@ -714,6 +740,19 @@ function startReady() {
   dom.splash.classList.add('out');
   dom.screen.classList.add('ready');
   setTimeout(() => dom.splash.remove(), SplashExitMs);
+}
+
+function syncLaunching() {
+  const gear = document.querySelector('.gear');
+  if (gear) {
+    gear.disabled = state.launching !== null;
+    gear.innerHTML = state.launching === 'settings' ? '<span class="spinner"></span>' : icon('settings');
+  }
+  document.querySelectorAll('.tile').forEach((tileEl) => {
+    const loading = tileEl.dataset.app === state.launching;
+    tileEl.disabled = state.launching !== null;
+    tileEl.querySelector('.tile-icon').innerHTML = loading ? '<span class="spinner"></span>' : tileGlyph(tileEl.dataset.app);
+  });
 }
 
 function syncPeek() {
@@ -830,15 +869,12 @@ function bindClicks() {
     }
     const app = event.target.closest('.tile');
     if (!app) return;
-    if (!app.closest('#grid')) {
-      showToast('Launching ' + app.dataset.app);
-    } else if (state.picking !== null) {
+    if (app.closest('#grid') && state.picking !== null) {
       pinApp(app.dataset.app, state.picking);
       showToast('Docked ' + app.dataset.app);
       closeDrawer();
     } else {
-      showToast('Launching ' + app.dataset.app);
-      closeDrawer();
+      launchApp(app.dataset.app);
     }
   }, true);
 }
@@ -944,7 +980,7 @@ function runAction(action) {
     state.position = 0;
     renderPlayer();
   } else if (action === 'settings') {
-    showToast('Opening Settings');
+    launchApp('settings');
   }
 }
 

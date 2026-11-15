@@ -1,6 +1,5 @@
 package com.thesabihjhatial.cockpit.splash
 
-import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.Animatable
@@ -35,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,15 +55,10 @@ private const val NeedleStartAngle = -120f
 @Composable
 private fun Splash() {
     val colors = LocalCockpitColors.current
-    val context = LocalContext.current
-    val reduceMotion = remember {
-        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
-    }
-    val needle = remember { Animatable(if (reduceMotion) NeedleRestAngle else NeedleStartAngle) }
-    val progress = remember { Animatable(if (reduceMotion) 1f else 0f) }
+    val needle = remember { Animatable(NeedleStartAngle) }
+    val progress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        if (reduceMotion) return@LaunchedEffect
         launch { progress.animateTo(1f, tween(DurationMs, easing = LinearEasing)) }
         needle.animateTo(
             NeedleRestAngle,
