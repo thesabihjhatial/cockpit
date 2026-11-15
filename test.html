@@ -79,7 +79,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .header { display: flex; flex-direction: column; justify-content: center; gap: 6px; min-height: 0; }
 .greeting { font-size: 16px; font-weight: 500; color: var(--muted); }
 .header-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: center; }
-.time-date { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 66fr); align-items: center; min-width: 0; }
+.time-date { text-align: left; display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 66fr); align-items: center; min-width: 0; }
 .time { font-size: 84px; font-weight: 500; letter-spacing: -0.045em; line-height: 0.92; white-space: nowrap; }
 .date { display: flex; align-items: center; min-width: 0; min-height: 72px; padding-left: 32px; border-left: 1px solid var(--line); font-size: 26px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .date b { font-weight: 600; }
@@ -157,6 +157,32 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .home.fading-in .viz,
 .home.fading-in .x-controls { animation: fade-in 175ms cubic-bezier(0.4, 0, 0.2, 1) 75ms backwards; }
 .expanded-view { display: none; }
+.clock-view { display: none; }
+.time, .c-time { display: inline-block; }
+.home.clock-out .header > .greeting,
+.home.clock-out .header .date,
+.home.clock-out .header .status,
+.home.clock-out .c-row,
+.home.clock-out .c-date,
+.home.clock-out > .now,
+.home.clock-out > .dock { animation: fade-out 75ms ease-out forwards; }
+.home.clock-in .header > .greeting,
+.home.clock-in .header .date,
+.home.clock-in .header .status,
+.home.clock-in .c-row,
+.home.clock-in .c-date,
+.home.clock-in > .now,
+.home.clock-in > .dock { animation: fade-in 175ms cubic-bezier(0.4, 0, 0.2, 1) 75ms backwards; }
+.home.clocking > .header, .home.clocking > .now, .home.clocking > .dock { display: none; }
+.home.clocking > .clock-view { display: contents; }
+.c-row { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: center; }
+.c-greeting { min-height: 56px; font-size: 18px; font-weight: 500; color: var(--muted); text-align: left; }
+.c-body { grid-row: span 3; min-height: 0; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 16px; text-align: left; }
+.c-time-wrap { grid-row: span 2; display: flex; align-items: flex-end; min-height: 0; }
+.c-time { margin-left: -12px; font-size: 300px; font-weight: 500; letter-spacing: -0.055em; line-height: 0.8; white-space: nowrap; }
+.c-date { display: flex; align-items: center; min-height: 0; font-size: 44px; letter-spacing: -0.02em; white-space: nowrap; }
+.c-date b { font-weight: 600; }
+.c-date span { font-weight: 500; color: var(--text2); }
 .home.expanded > .header, .home.expanded > .now, .home.expanded > .dock { display: none; }
 .home.expanded > .expanded-view { display: contents; }
 .x-info { min-height: 0; display: flex; align-items: center; gap: 24px; text-align: left; }
@@ -177,9 +203,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .peek { position: absolute; left: 32px; right: 32px; bottom: 0; height: 32px; z-index: 6; }
 .drawer { position: absolute; inset: 0; z-index: 5; transform: translateY(672px); pointer-events: none; }
 .drawer.open { pointer-events: auto; }
-.drawer.animating { transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1); }
+.drawer.animating { transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1); }
 .drawer-bg { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
-.drawer.animating .drawer-bg, .drawer.animating .drawer-title { transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1); }
+.drawer.animating .drawer-bg, .drawer.animating .drawer-title { transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1); }
 .drawer-grid { position: absolute; inset: 0; padding: 32px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 152px; gap: 16px; align-content: start; overflow-y: auto; scrollbar-width: none; }
 .drawer-grid::-webkit-scrollbar { display: none; }
 .drawer-title { position: absolute; top: 0; left: 0; right: 0; height: 32px; padding: 0 32px; background: var(--bg); display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); opacity: 0; pointer-events: none; }
@@ -243,6 +269,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
           <section class="now" id="now" aria-label="Now playing"></section>
           <nav class="dock" id="dock" aria-label="Pinned apps"></nav>
           <div class="expanded-view" id="expandedView"></div>
+          <div class="clock-view" id="clockView"></div>
         </div>
         <button class="peek" id="peek" aria-label="All apps"></button>
         <div class="drawer" id="drawer">
@@ -353,6 +380,7 @@ const dom = {
   drawerBg: document.getElementById('drawerBg'),
   drawerTitle: document.getElementById('drawerTitle'),
   dock: document.getElementById('dock'),
+  clockView: document.getElementById('clockView'),
   expandedView: document.getElementById('expandedView'),
   frame: document.getElementById('frame'),
   grid: document.getElementById('grid'),
@@ -374,6 +402,7 @@ const state = {
   bluetoothConnected: true,
   bluetoothDevice: "Sabih's iPhone 15",
   bluetoothPermission: true,
+  clock: false,
   expanded: false,
   headlights: false,
   launching: null,
@@ -392,11 +421,16 @@ const state = {
 
 const view = { lastMinute: '', scale: 1, suppressClick: false, dipping: false, switching: false, wantNight: false, drawerFade: null };
 
+function away() {
+  return state.expanded || state.clock;
+}
+
 function applyExpanded() {
   dom.home.classList.toggle('expanded', state.expanded);
-  dom.drawer.style.visibility = state.expanded ? 'hidden' : '';
+  dom.home.classList.toggle('clocking', state.clock);
+  dom.drawer.style.visibility = away() ? 'hidden' : '';
   if (view.drawerFade) view.drawerFade.cancel();
-  view.drawerFade = state.expanded ? null : dom.drawer.animate({ opacity: [0, 1] }, { duration: FadeInMs, delay: FadeOutMs, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'backwards' });
+  view.drawerFade = away() ? null : dom.drawer.animate({ opacity: [0, 1] }, { duration: FadeInMs, delay: FadeOutMs, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'backwards' });
   syncPeek();
 }
 
@@ -465,13 +499,14 @@ function growArt(start, target, radius) {
   if (!start || !target) return;
   const end = target.getBoundingClientRect();
   const scale = start.width / end.width;
+  const rounded = radius !== undefined;
   const fromRadius = (radius === ExpandedArtRadius ? CollapsedArtRadius : ExpandedArtRadius) / scale;
   const dx = (start.left - end.left) / view.scale;
   const dy = (start.top - end.top) / view.scale;
   target.animate(
     [
-      { borderRadius: fromRadius + 'px', transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')', transformOrigin: '0 0' },
-      { borderRadius: radius + 'px', transform: 'none', transformOrigin: '0 0' },
+      { ...(rounded && { borderRadius: fromRadius + 'px' }), transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')', transformOrigin: '0 0' },
+      { ...(rounded && { borderRadius: radius + 'px' }), transform: 'none', transformOrigin: '0 0' },
     ],
     { duration: ArtMs, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
   );
@@ -613,13 +648,22 @@ function renderHeader() {
   const wifi = state.wifi
     ? '<span class="chip">' + icon('wifi') + esc(state.wifiName) + '</span>'
     : '<span class="chip muted">' + icon('wifi') + 'Not connected</span>';
+  const status = '<div class="status">' + bluetooth + wifi + '<button class="gear" data-action="settings" aria-label="Settings">' + icon('settings') + '</button></div>';
+  const clock = (hour % 12 || 12) + ':' + minutes;
+  const day = Days[current.getDay()];
+  const date = current.getDate() + ' ' + Months[current.getMonth()];
   dom.header.innerHTML =
     '<span class="greeting">' + greeting + '</span>' +
     '<div class="header-row">' +
-    '<section class="time-date" aria-label="Time and date"><div><span class="time">' + (hour % 12 || 12) + ':' + minutes + '</span></div>' +
-    '<div class="date"><b>' + Days[current.getDay()] + ',</b>&nbsp;<span>' + current.getDate() + ' ' + Months[current.getMonth()] + '</span></div></section>' +
-    '<div class="status">' + bluetooth + wifi + '<button class="gear" data-action="settings" aria-label="Settings">' + icon('settings') + '</button></div>' +
+    '<button class="time-date" data-action="clock" aria-label="Expand clock"><span><span class="time">' + clock + '</span></span>' +
+    '<span class="date"><b>' + day + ',</b>&nbsp;<span>' + date + '</span></span></button>' +
+    status +
     '</div>';
+  dom.clockView.innerHTML =
+    '<div class="c-row"><button class="c-greeting" data-action="unclock" aria-label="Collapse clock">' + greeting + '</button>' + status + '</div>' +
+    '<button class="c-body" data-action="unclock" aria-label="Collapse clock">' +
+    '<span class="c-time-wrap"><span class="c-time">' + clock + '</span></span>' +
+    '<span class="c-date"><b>' + day + ',</b>&nbsp;<span>' + date + '</span></span></button>';
   view.lastMinute = hour + ':' + minutes;
   syncLaunching();
 }
@@ -684,6 +728,26 @@ function setExpanded(expanded) {
   }, FadeOutMs);
 }
 
+function setClock(open) {
+  if (state.clock === open || state.expanded || view.switching) return;
+  view.switching = true;
+  const from = document.querySelector(open ? '.time' : '.c-time');
+  const start = from ? from.getBoundingClientRect() : null;
+  dom.home.classList.add('clock-out');
+  if (open) view.drawerFade = dom.drawer.animate({ opacity: [1, 0] }, { duration: FadeOutMs, easing: 'ease-out', fill: 'forwards' });
+  setTimeout(() => {
+    state.clock = open;
+    applyExpanded();
+    dom.home.classList.remove('clock-out');
+    dom.home.classList.add('clock-in');
+    growArt(start, document.querySelector(open ? '.c-time' : '.time'));
+    setTimeout(() => {
+      dom.home.classList.remove('clock-in');
+      view.switching = false;
+    }, Math.max(ArtMs, FadeOutMs + FadeInMs));
+  }, FadeOutMs);
+}
+
 function setNight(night) {
   view.wantNight = night;
   if (state.night === night || view.dipping) return;
@@ -743,11 +807,10 @@ function startReady() {
 }
 
 function syncLaunching() {
-  const gear = document.querySelector('.gear');
-  if (gear) {
+  document.querySelectorAll('.gear').forEach((gear) => {
     gear.disabled = state.launching !== null;
     gear.innerHTML = state.launching === 'settings' ? '<span class="spinner"></span>' : icon('settings');
-  }
+  });
   document.querySelectorAll('.tile').forEach((tileEl) => {
     const loading = tileEl.dataset.app === state.launching;
     tileEl.disabled = state.launching !== null;
@@ -756,7 +819,7 @@ function syncLaunching() {
 }
 
 function syncPeek() {
-  dom.peek.hidden = state.open || state.expanded;
+  dom.peek.hidden = state.open || away();
 }
 
 function tick() {
@@ -929,7 +992,7 @@ function bindGestures() {
     if (!gesture.mode && Math.hypot(dx, dy) >= DragSlop) {
       clearTimeout(gesture.hold);
       if (Math.abs(dy) <= Math.abs(dx)) gesture.mode = 'none';
-      else if (!state.open && !state.expanded && dy < 0) gesture.mode = 'open';
+      else if (!state.open && !away() && dy < 0) gesture.mode = 'open';
       else if (state.open && dy > 0 && gesture.scroll === 0) gesture.mode = 'close';
       else gesture.mode = state.open ? 'scroll' : 'none';
       if (gesture.mode === 'open' || gesture.mode === 'close') dom.drawer.classList.remove('animating');
@@ -960,6 +1023,8 @@ function runAction(action) {
     state.bluetoothPermission = true;
     showToast('Bluetooth permission granted');
     renderHeader();
+  } else if (action === 'clock') {
+    setClock(true);
   } else if (action === 'collapse') {
     setExpanded(false);
   } else if (action === 'expand') {
@@ -981,6 +1046,8 @@ function runAction(action) {
     renderPlayer();
   } else if (action === 'settings') {
     launchApp('settings');
+  } else if (action === 'unclock') {
+    setClock(false);
   }
 }
 

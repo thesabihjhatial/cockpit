@@ -5,10 +5,8 @@ import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.pow
@@ -34,13 +32,12 @@ private fun levels(fft: ByteArray, previous: FloatArray): FloatArray {
 }
 
 @Composable
-fun rememberSpectrum(enabled: Boolean, playing: Boolean): State<FloatArray?> {
+fun rememberSpectrum(enabled: Boolean): State<FloatArray?> {
     val spectrum = remember { mutableStateOf<FloatArray?>(null) }
-    val isPlaying by rememberUpdatedState(playing)
 
     DisposableEffect(enabled) {
         val visualizer = if (enabled) {
-            runCatching { startVisualizer { if (isPlaying) spectrum.value = it } }.getOrNull()
+            runCatching { startVisualizer { spectrum.value = it } }.getOrNull()
         } else {
             null
         }

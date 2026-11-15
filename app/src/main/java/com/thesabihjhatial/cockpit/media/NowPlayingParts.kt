@@ -43,6 +43,7 @@ import kotlinx.coroutines.delay
 
 private val ArtShape = RoundedCornerShape(20.dp)
 
+private const val DisabledAlpha = 0.3f
 private const val PositionTickMs = 500L
 
 @Composable
@@ -90,12 +91,13 @@ internal fun ControlButton(
     tint: Color,
     onClick: () -> Unit,
     background: Color = Color.Transparent,
+    enabled: Boolean = true,
 ) {
     Box(
-        modifier = Modifier.size(buttonSize).clip(CircleShape).background(background).clickable(onClick = onClick),
+        modifier = Modifier.size(buttonSize).clip(CircleShape).background(background).clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(imageVector = icon, contentDescription = description, modifier = Modifier.size(iconSize), tint = tint)
+        Icon(imageVector = icon, contentDescription = description, modifier = Modifier.size(iconSize), tint = if (enabled) tint else tint.copy(alpha = DisabledAlpha))
     }
 }
 

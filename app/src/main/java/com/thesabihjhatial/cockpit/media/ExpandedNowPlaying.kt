@@ -41,7 +41,7 @@ fun ColumnScope.ExpandedNowPlaying(
     val context = LocalContext.current
     val collapseLabel = stringResource(R.string.media_collapse)
     val position by rememberPosition(nowPlaying)
-    val spectrum = rememberSpectrum(spectrumAllowed, nowPlaying.playing)
+    val spectrum = rememberSpectrum(spectrumAllowed && nowPlaying.playing)
     val fraction = if (nowPlaying.duration > 0) position.toFloat() / nowPlaying.duration else 0f
 
     Row(
@@ -105,6 +105,7 @@ fun ColumnScope.ExpandedNowPlaying(
                 iconSize = 34.dp,
                 tint = colors.text,
                 onClick = { nowPlaying.skipToPrevious(context) },
+                enabled = nowPlaying.hasPrevious,
             )
             ControlButton(
                 icon = if (nowPlaying.playing) CockpitIcons.Pause else CockpitIcons.Play,
@@ -122,6 +123,7 @@ fun ColumnScope.ExpandedNowPlaying(
                 iconSize = 34.dp,
                 tint = colors.text,
                 onClick = { nowPlaying.skipToNext(context) },
+                enabled = nowPlaying.hasNext,
             )
         }
     }

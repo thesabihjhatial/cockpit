@@ -20,7 +20,7 @@ fun legacyMusicFlow(context: Context, source: String): Flow<NowPlaying?> = callb
 
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(receiverContext: Context, intent: Intent) {
-            val base = current ?: NowPlaying(null, "", null, 0L, false, 0L, 0L, source, 1f, "")
+            val base = current ?: NowPlaying(null, "", null, 0L, true, true, false, 0L, 0L, source, 1f, "")
             val playing = if (intent.hasExtra("playing")) intent.getBooleanExtra("playing", false) else base.playing
             current = if (intent.action == ActionMetaChanged) {
                 base.copy(

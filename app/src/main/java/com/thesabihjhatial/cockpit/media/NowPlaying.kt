@@ -12,6 +12,8 @@ data class NowPlaying(
     val artist: String,
     val controller: MediaController?,
     val duration: Long,
+    val hasNext: Boolean,
+    val hasPrevious: Boolean,
     val playing: Boolean,
     val position: Long,
     val positionUpdatedAt: Long,

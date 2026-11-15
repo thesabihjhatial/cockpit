@@ -12,7 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-private const val DurationMs = 300
+private const val DurationMs = 250
 private const val SnapPoint = 0.5f
 
 @Stable

@@ -5,6 +5,8 @@
     <string name="bluetooth_allow">Allow Bluetooth</string>
     <string name="bluetooth_connected">Connected to %1$s</string>
     <string name="bluetooth_disconnected">Bluetooth not connected</string>
+    <string name="clock_collapse">Collapse clock</string>
+    <string name="clock_expand">Expand clock</string>
     <string name="dock_add">Add app</string>
     <string name="dock_add_to">Add to dock</string>
     <string name="dock_badge">Docked</string>

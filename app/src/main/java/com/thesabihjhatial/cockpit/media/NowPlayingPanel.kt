@@ -81,6 +81,7 @@ private fun Controls(nowPlaying: NowPlaying, modifier: Modifier = Modifier) {
             iconSize = 34.dp,
             tint = colors.text,
             onClick = { nowPlaying.skipToPrevious(context) },
+            enabled = nowPlaying.hasPrevious,
         )
         ControlButton(
             icon = if (nowPlaying.playing) CockpitIcons.Pause else CockpitIcons.Play,
@@ -98,6 +99,7 @@ private fun Controls(nowPlaying: NowPlaying, modifier: Modifier = Modifier) {
             iconSize = 34.dp,
             tint = colors.text,
             onClick = { nowPlaying.skipToNext(context) },
+            enabled = nowPlaying.hasNext,
         )
     }
 }
