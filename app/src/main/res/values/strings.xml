@@ -17,6 +17,10 @@
     <string name="logo_description">Cockpit</string>
     <string name="media_allow">Allow access</string>
     <string name="media_allow_message">Allow notification access to show what\'s playing</string>
+    <string name="media_bluetooth">Bluetooth</string>
+    <string name="media_bluetooth_audio">Bluetooth audio</string>
+    <string name="media_collapse">Collapse now playing</string>
+    <string name="media_expand">Expand now playing</string>
     <string name="media_next">Next track</string>
     <string name="media_now_playing">Now playing · %1$s</string>
     <string name="media_pause">Pause</string>

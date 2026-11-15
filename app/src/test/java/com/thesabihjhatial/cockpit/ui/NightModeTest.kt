@@ -13,6 +13,17 @@ class NightModeTest {
     }
 
     @Test
+    fun headlightsMakeDaytimeDark() {
+        assertTrue(isDark(12, true))
+        assertFalse(isDark(12, false))
+    }
+
+    @Test
+    fun nightStaysDarkWithHeadlightsOff() {
+        assertTrue(isDark(22, false))
+    }
+
+    @Test
     fun nightRunsFromSixPmToSixAm() {
         assertTrue(isNight(18))
         assertTrue(isNight(0))

@@ -72,6 +72,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 .screen { position: absolute; inset: 0; transform: scale(0.96); transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1); }
 .screen.ready { transform: scale(1); }
+.stage.theme-fading, .stage.theme-fading * { transition: background-color 125ms ease-in-out, color 125ms ease-in-out, border-color 125ms ease-in-out, fill 125ms ease-in-out, stroke 125ms ease-in-out; }
 
 .home { position: absolute; inset: 0; padding: 32px; display: grid; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
@@ -131,6 +132,44 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .tile-name { min-width: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge { position: absolute; top: 12px; right: 12px; height: 22px; padding: 0 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.22); font-size: 11px; font-weight: 600; display: flex; align-items: center; }
 
+.np-tap { grid-column: span 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 16px; min-width: 0; text-align: left; }
+.np-tap .info { grid-column: span 2; }
+.home.fading-out > .header,
+.home.fading-out > .dock,
+.home.fading-out .now .info,
+.home.fading-out .now .controls,
+.home.fading-out .now .prompt,
+.home.fading-out .x-text,
+.home.fading-out .x-chevron,
+.home.fading-out .viz,
+.home.fading-out .x-controls { animation: fade-out 90ms ease-out forwards; }
+.home.fading-in > .header,
+.home.fading-in > .dock,
+.home.fading-in .now .info,
+.home.fading-in .now .controls,
+.home.fading-in .now .prompt,
+.home.fading-in .x-text,
+.home.fading-in .x-chevron,
+.home.fading-in .viz,
+.home.fading-in .x-controls { animation: fade-in 210ms cubic-bezier(0.4, 0, 0.2, 1) 90ms backwards; }
+.expanded-view { display: none; }
+.home.expanded > .header, .home.expanded > .now, .home.expanded > .dock { display: none; }
+.home.expanded > .expanded-view { display: contents; }
+.x-info { min-height: 0; display: flex; align-items: center; gap: 24px; text-align: left; }
+.x-art { width: 152px; height: 152px; flex: none; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14); }
+.x-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.x-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.x-chevron { width: 56px; height: 56px; flex: none; margin-right: -14px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.x-chevron svg { width: 28px; height: 28px; }
+.viz { grid-row: span 2; min-height: 0; display: grid; grid-template-columns: repeat(21, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.bar { display: block; transform-origin: bottom center; border-radius: 10px 10px 4px 4px; background: var(--accent); animation: eq ease-in-out infinite; }
+.viz.paused .bar { animation-play-state: paused; }
+.x-controls { min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.x-progress { display: flex; align-items: center; gap: 16px; font-size: 15px; font-weight: 500; color: var(--muted); }
+.x-progress .progress { flex: 1; }
+.x-buttons { display: flex; align-items: center; justify-content: center; gap: 40px; }
+.control.play.large { width: 96px; height: 96px; }
+.control.play.large svg { width: 38px; height: 38px; }
 .peek { position: absolute; left: 32px; right: 32px; bottom: 0; height: 32px; z-index: 6; }
 .drawer { position: absolute; inset: 0; z-index: 5; transform: translateY(672px); pointer-events: none; }
 .drawer.open { pointer-events: auto; }
@@ -159,6 +198,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .splash-bar i { display: block; width: 100%; height: 100%; border-radius: 2px; background: var(--accent); transform-origin: left center; animation: fill 3s linear forwards; }
 .needle { transform-box: view-box; transform-origin: 24px 24px; animation: sweep 3s linear forwards; }
 
+@keyframes fade-in { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes eq { 0% { transform: scaleY(var(--lo)); } 50% { transform: scaleY(1); } 100% { transform: scaleY(var(--lo)); } }
 @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes sweep {
   0% { transform: rotate(-120deg); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
@@ -195,6 +237,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
           <div class="header" id="header"></div>
           <section class="now" id="now" aria-label="Now playing"></section>
           <nav class="dock" id="dock" aria-label="Pinned apps"></nav>
+          <div class="expanded-view" id="expandedView"></div>
         </div>
         <button class="peek" id="peek" aria-label="All apps"></button>
         <div class="drawer" id="drawer">
@@ -251,6 +294,11 @@ const Apps = [
 const Days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DefaultPinned = ['Maps', 'Netflix', 'Spotify', 'YouTube'];
 const DragSlop = 8;
+const ArtMs = 300;
+const CollapsedArtRadius = 20;
+const ExpandedArtRadius = 16;
+const FadeInMs = 210;
+const FadeOutMs = 90;
 const FlingVelocity = 0.5;
 const HoldMs = 400;
 const Months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -261,6 +309,7 @@ const SheetTravel = 672;
 const SplashDurationMs = 3000;
 const SplashExitMs = 150;
 const StorageKey = 'cockpit.pinned.v3';
+const ThemeFadeMs = 125;
 
 const Glyphs = {
   Calendar: { path: 'M18.316 5.684H24v12.632h-5.684V5.684zM5.684 24h12.632v-5.684H5.684V24zM18.316 5.684V0H1.895A1.894 1.894 0 0 0 0 1.895v16.421h5.684V5.684h12.632zm-7.207 6.25v-.065c.272-.144.5-.349.687-.617s.279-.595.279-.982c0-.379-.099-.72-.3-1.025a2.05 2.05 0 0 0-.832-.714 2.703 2.703 0 0 0-1.197-.257c-.6 0-1.094.156-1.481.467-.386.311-.65.671-.793 1.078l1.085.452c.086-.249.224-.461.413-.633.189-.172.445-.257.767-.257.33 0 .602.088.816.264a.86.86 0 0 1 .322.703c0 .33-.12.589-.36.778-.24.19-.535.284-.886.284h-.567v1.085h.633c.407 0 .748.109 1.02.327.272.218.407.499.407.843 0 .336-.129.614-.387.832s-.565.327-.924.327c-.351 0-.651-.103-.897-.311-.248-.208-.422-.502-.521-.881l-1.096.452c.178.616.505 1.082.977 1.401.472.319.984.478 1.538.477a2.84 2.84 0 0 0 1.293-.291c.382-.193.684-.458.902-.794.218-.336.327-.72.327-1.149 0-.429-.115-.797-.344-1.105a2.067 2.067 0 0 0-.881-.689zm2.093-1.931l.602.913L15 10.045v5.744h1.187V8.446h-.827l-2.158 1.557zM22.105 0h-3.289v5.184H24V1.895A1.894 1.894 0 0 0 22.105 0zm-3.289 23.5l4.684-4.684h-4.684V23.5zM0 22.105C0 23.152.848 24 1.895 24h3.289v-5.184H0v3.289z' },
@@ -278,6 +327,7 @@ const Glyphs = {
 const Icons = {
   add: '<path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
   bluetooth: '<path d="M7 7l10 10-5 5V2l5 5L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevron: '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
   next: '<path d="M5 4l10 8-10 8V4z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   pause: '<rect x="6" y="4.5" width="4" height="15" rx="1.2" fill="currentColor"/><rect x="14" y="4.5" width="4" height="15" rx="1.2" fill="currentColor"/>',
   play: '<path d="M8 4.8v14.4c0 .8.9 1.3 1.6.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2C8.9 3.5 8 4 8 4.8z" fill="currentColor"/>',
@@ -295,9 +345,11 @@ const dom = {
   drawerBg: document.getElementById('drawerBg'),
   drawerTitle: document.getElementById('drawerTitle'),
   dock: document.getElementById('dock'),
+  expandedView: document.getElementById('expandedView'),
   frame: document.getElementById('frame'),
   grid: document.getElementById('grid'),
   header: document.getElementById('header'),
+  home: document.getElementById('home'),
   menu: document.getElementById('menu'),
   now: document.getElementById('now'),
   peek: document.getElementById('peek'),
@@ -313,6 +365,8 @@ const state = {
   bluetoothConnected: true,
   bluetoothDevice: "Sabih's iPhone 15",
   bluetoothPermission: true,
+  expanded: false,
+  headlights: false,
   mediaAccess: true,
   mediaVisible: params.get('media') !== 'idle',
   night: params.get('theme') ? params.get('theme') === 'night' : isNight(new Date().getHours()),
@@ -326,7 +380,13 @@ const state = {
   wifiName: "Sabih's Infinix HOT 50i",
 };
 
-const view = { lastMinute: '', scale: 1, suppressClick: false };
+const view = { lastMinute: '', scale: 1, suppressClick: false, switching: false, themeTimer: 0 };
+
+function applyExpanded() {
+  dom.home.classList.toggle('expanded', state.expanded);
+  dom.drawer.style.visibility = state.expanded ? 'hidden' : '';
+  syncPeek();
+}
 
 function applyProgress(progress) {
   dom.drawer.style.transform = 'translateY(' + (1 - progress) * SheetTravel + 'px)';
@@ -341,6 +401,20 @@ function applyScale() {
 
 function applyTheme() {
   dom.stage.dataset.theme = state.night ? 'dark' : 'light';
+}
+
+function bars() {
+  let html = '';
+  for (let i = 0; i < 21; i++) {
+    const distance = Math.abs(i - 10) / 10;
+    const peak = 34 + 62 * Math.cos(distance * Math.PI / 2) + ((i * 37) % 11) - 5;
+    const low = (0.22 + ((i * 53) % 30) / 100).toFixed(2);
+    const duration = (0.7 + ((i * 29) % 9) / 10).toFixed(2);
+    const delay = (((i * 41) % 13) / 10).toFixed(1);
+    const opacity = (0.55 + 0.45 * (1 - distance)).toFixed(2);
+    html += '<span class="bar" style="height:' + Math.min(100, Math.round(peak)) + '%;opacity:' + opacity + ';--lo:' + low + ';animation-duration:' + duration + 's;animation-delay:-' + delay + 's"></span>';
+  }
+  return html;
 }
 
 function buildGrid() {
@@ -374,6 +448,22 @@ function formatTime(seconds) {
   return Math.floor(whole / 60) + ':' + String(whole % 60).padStart(2, '0');
 }
 
+function growArt(start, target, radius) {
+  if (!start || !target) return;
+  const end = target.getBoundingClientRect();
+  const scale = start.width / end.width;
+  const fromRadius = (radius === ExpandedArtRadius ? CollapsedArtRadius : ExpandedArtRadius) / scale;
+  const dx = (start.left - end.left) / view.scale;
+  const dy = (start.top - end.top) / view.scale;
+  target.animate(
+    [
+      { borderRadius: fromRadius + 'px', transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')', transformOrigin: '0 0' },
+      { borderRadius: radius + 'px', transform: 'none', transformOrigin: '0 0' },
+    ],
+    { duration: ArtMs, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+  );
+}
+
 function hideMenu() {
   dom.menu.hidden = true;
 }
@@ -390,9 +480,10 @@ function init() {
   applyProgress(0);
   window.addEventListener('resize', applyScale);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'n') toggleNight();
+    if (event.key === 'n') setNight(!state.night);
+    if (event.key === 'h') toggleHeadlights();
     if (event.key === 'm') toggleMedia();
-    if (event.key === 'a') toggleState('mediaAccess', renderNow);
+    if (event.key === 'a') toggleState('mediaAccess', renderPlayer);
     if (event.key === 'b') toggleState('bluetoothConnected', renderHeader);
     if (event.key === 'p') toggleState('bluetoothPermission', renderHeader);
     if (event.key === 'w') toggleState('wifi', renderHeader);
@@ -438,7 +529,7 @@ function pinApp(name, slot) {
 
 function renderAll() {
   renderHeader();
-  renderNow();
+  renderPlayer();
   renderDock();
 }
 
@@ -452,6 +543,33 @@ function renderDock() {
       return '<div class="slot">' + content + '</div>';
     })
     .join('');
+}
+
+function renderExpanded() {
+  if (!state.mediaAccess || !state.mediaVisible) {
+    state.expanded = false;
+    dom.expandedView.innerHTML = '';
+    applyExpanded();
+    return;
+  }
+  const track = Tracks[state.track];
+  dom.expandedView.innerHTML =
+    '<button class="x-info" data-action="collapse" aria-label="Collapse now playing">' +
+    '<span class="x-art" aria-hidden="true"><img src="' + track.art + '" alt=""></span>' +
+    '<span class="x-text"><span class="source"><i></i>Now playing · ' + esc(track.source) + '</span>' +
+    '<span class="title">' + esc(track.title) + '</span><span class="artist">' + esc(track.artist) + '</span></span>' +
+    '<span class="x-chevron" aria-hidden="true">' + icon('chevron') + '</span></button>' +
+    '<button class="viz' + (state.playing ? '' : ' paused') + '" data-action="collapse" aria-label="Collapse now playing">' + bars() + '</button>' +
+    '<div class="x-controls"><div class="x-progress"><span class="elapsed"></span>' +
+    '<div class="progress"><div class="progress-fill"></div><span class="progress-thumb"></span></div>' +
+    '<span>' + formatTime(track.duration) + '</span></div>' +
+    '<div class="x-buttons">' +
+    '<button class="control" data-action="previous" aria-label="Previous track">' + icon('previous') + '</button>' +
+    '<button class="control play large" data-action="play" aria-label="' + (state.playing ? 'Pause' : 'Play') + '">' + icon(state.playing ? 'pause' : 'play') + '</button>' +
+    '<button class="control" data-action="next" aria-label="Next track">' + icon('next') + '</button>' +
+    '</div></div>';
+  applyExpanded();
+  updateProgress();
 }
 
 function renderHeader() {
@@ -492,18 +610,24 @@ function renderNow() {
   const track = Tracks[state.track];
   dom.now.innerHTML =
     '<div class="now-grid">' +
+    '<button class="np-tap" data-action="expand" aria-label="Expand now playing">' +
     '<div class="art" aria-hidden="true"><img src="' + track.art + '" alt=""></div>' +
     '<div class="info"><div class="info-top">' +
     '<span class="source"><i></i>Now playing · ' + esc(track.source) + '</span>' +
     '<h2 class="title">' + esc(track.title) + '</h2><span class="artist">' + esc(track.artist) + '</span></div>' +
-    '<div class="info-bottom"><div class="progress"><div class="progress-fill" id="progressFill"></div><span class="progress-thumb" id="progressThumb"></span></div>' +
-    '<div class="times"><span id="elapsed"></span><span>' + formatTime(track.duration) + '</span></div></div></div>' +
+    '<div class="info-bottom"><div class="progress"><div class="progress-fill"></div><span class="progress-thumb"></span></div>' +
+    '<div class="times"><span class="elapsed"></span><span>' + formatTime(track.duration) + '</span></div></div></div></button>' +
     '<div class="controls">' +
     '<button class="control" data-action="previous" aria-label="Previous track">' + icon('previous') + '</button>' +
     '<button class="control play" data-action="play" aria-label="' + (state.playing ? 'Pause' : 'Play') + '">' + icon(state.playing ? 'pause' : 'play') + '</button>' +
     '<button class="control" data-action="next" aria-label="Next track">' + icon('next') + '</button>' +
     '</div></div>';
   updateProgress();
+}
+
+function renderPlayer() {
+  renderNow();
+  renderExpanded();
 }
 
 function savePinned() {
@@ -514,12 +638,40 @@ function savePinned() {
   }
 }
 
+function setExpanded(expanded) {
+  if (state.expanded === expanded || view.switching) return;
+  view.switching = true;
+  const from = document.querySelector(expanded ? '.art' : '.x-art');
+  const start = from ? from.getBoundingClientRect() : null;
+  dom.home.classList.add('fading-out');
+  setTimeout(() => {
+    state.expanded = expanded;
+    applyExpanded();
+    dom.home.classList.remove('fading-out');
+    dom.home.classList.add('fading-in');
+    growArt(start, document.querySelector(expanded ? '.x-art' : '.art'), expanded ? ExpandedArtRadius : CollapsedArtRadius);
+    setTimeout(() => {
+      dom.home.classList.remove('fading-in');
+      view.switching = false;
+    }, Math.max(ArtMs, FadeOutMs + FadeInMs));
+  }, FadeOutMs);
+}
+
+function setNight(night) {
+  if (state.night === night) return;
+  dom.stage.classList.add('theme-fading');
+  state.night = night;
+  applyTheme();
+  clearTimeout(view.themeTimer);
+  view.themeTimer = setTimeout(() => dom.stage.classList.remove('theme-fading'), ThemeFadeMs + 25);
+}
+
 function setOpen(open) {
   state.open = open;
   if (!open) state.picking = null;
   dom.drawer.classList.add('animating');
   dom.drawer.classList.toggle('open', open);
-  dom.peek.hidden = open;
+  syncPeek();
   applyProgress(open ? 1 : 0);
   if (!open) dom.grid.scrollTop = 0;
 }
@@ -554,13 +706,17 @@ function startReady() {
   setTimeout(() => dom.splash.remove(), SplashExitMs);
 }
 
+function syncPeek() {
+  dom.peek.hidden = state.open || state.expanded;
+}
+
 function tick() {
   if (state.playing && state.mediaVisible) {
     state.position += 0.25;
     if (state.position >= Tracks[state.track].duration) {
       state.track = (state.track + 1) % Tracks.length;
       state.position = 0;
-      renderNow();
+      renderPlayer();
     } else {
       updateProgress();
     }
@@ -583,14 +739,14 @@ function tileGlyph(name) {
   return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="' + glyph.path + '"/></svg>';
 }
 
-function toggleMedia() {
-  state.mediaVisible = !state.mediaVisible;
-  renderNow();
+function toggleHeadlights() {
+  state.headlights = !state.headlights;
+  setNight(state.headlights || isNight(new Date().getHours()));
 }
 
-function toggleNight() {
-  state.night = !state.night;
-  applyTheme();
+function toggleMedia() {
+  state.mediaVisible = !state.mediaVisible;
+  renderPlayer();
 }
 
 function toggleState(key, render) {
@@ -608,13 +764,15 @@ function undockApp(name) {
 function updateProgress() {
   const track = Tracks[state.track];
   const fraction = clamp(state.position / track.duration) * 100;
-  const fill = document.getElementById('progressFill');
-  const thumb = document.getElementById('progressThumb');
-  const elapsed = document.getElementById('elapsed');
-  if (!fill) return;
-  fill.style.width = fraction + '%';
-  thumb.style.left = fraction + '%';
-  elapsed.textContent = formatTime(state.position);
+  document.querySelectorAll('.progress-fill').forEach((fill) => {
+    fill.style.width = fraction + '%';
+  });
+  document.querySelectorAll('.progress-thumb').forEach((thumb) => {
+    thumb.style.left = fraction + '%';
+  });
+  document.querySelectorAll('.elapsed').forEach((elapsed) => {
+    elapsed.textContent = formatTime(state.position);
+  });
 }
 
 function bindClicks() {
@@ -706,11 +864,6 @@ function bindGestures() {
         showMenu(tileEl);
       }, HoldMs);
     }
-    try {
-      dom.stage.setPointerCapture(event.pointerId);
-    } catch (error) {
-      return;
-    }
   });
   dom.stage.addEventListener('pointermove', (event) => {
     if (!gesture || event.pointerId !== gesture.id) return;
@@ -720,10 +873,17 @@ function bindGestures() {
     if (!gesture.mode && Math.hypot(dx, dy) >= DragSlop) {
       clearTimeout(gesture.hold);
       if (Math.abs(dy) <= Math.abs(dx)) gesture.mode = 'none';
-      else if (!state.open && dy < 0) gesture.mode = 'open';
+      else if (!state.open && !state.expanded && dy < 0) gesture.mode = 'open';
       else if (state.open && dy > 0 && gesture.scroll === 0) gesture.mode = 'close';
       else gesture.mode = state.open ? 'scroll' : 'none';
       if (gesture.mode === 'open' || gesture.mode === 'close') dom.drawer.classList.remove('animating');
+      if (gesture.mode !== 'none') {
+        try {
+          dom.stage.setPointerCapture(event.pointerId);
+        } catch (error) {
+          return;
+        }
+      }
     }
     if (gesture.mode === 'open' || gesture.mode === 'close') applyProgress(clamp(gesture.progress - dy / SheetTravel));
     else if (gesture.mode === 'scroll') dom.grid.scrollTop = gesture.scroll - dy;
@@ -744,20 +904,24 @@ function runAction(action) {
     state.bluetoothPermission = true;
     showToast('Bluetooth permission granted');
     renderHeader();
+  } else if (action === 'collapse') {
+    setExpanded(false);
+  } else if (action === 'expand') {
+    setExpanded(true);
   } else if (action === 'media') {
     state.mediaAccess = true;
-    renderNow();
+    renderPlayer();
   } else if (action === 'next') {
     state.track = (state.track + 1) % Tracks.length;
     state.position = 0;
-    renderNow();
+    renderPlayer();
   } else if (action === 'play') {
     state.playing = !state.playing;
-    renderNow();
+    renderPlayer();
   } else if (action === 'previous') {
     if (state.position <= 3) state.track = (state.track + Tracks.length - 1) % Tracks.length;
     state.position = 0;
-    renderNow();
+    renderPlayer();
   } else if (action === 'settings') {
     showToast('Opening Settings');
   }

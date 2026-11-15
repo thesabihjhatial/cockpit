@@ -33,7 +33,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val apps: StateFlow<List<AppInfo>> = appList.asStateFlow()
     val homeRequests: SharedFlow<Unit> = homeSignal.asSharedFlow()
     val pinned: StateFlow<List<AppInfo?>> = combine(appList, pinnedStore.slots) { apps, slots ->
-        slots.map { packageName -> apps.firstOrNull { it.packageName == packageName } }
+        slots.map { id -> apps.firstOrNull { it.id == id } ?: apps.firstOrNull { it.id.substringBefore('/') == id } }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, List(PinSlots) { null })
     val slots: StateFlow<List<String?>> = pinnedStore.slots
 
@@ -45,15 +45,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun dock(packageName: String) = pinnedStore.dock(packageName)
+    fun dock(id: String) = pinnedStore.dock(id)
 
-    fun pin(packageName: String, slot: Int) = pinnedStore.pin(packageName, slot)
+    fun pin(id: String, slot: Int) = pinnedStore.pin(id, slot)
 
     fun requestHome() {
         homeSignal.tryEmit(Unit)
     }
 
-    fun undock(packageName: String) = pinnedStore.undock(packageName)
+    fun undock(id: String) = pinnedStore.undock(id)
 
     fun unpin(slot: Int) = pinnedStore.unpin(slot)
 }

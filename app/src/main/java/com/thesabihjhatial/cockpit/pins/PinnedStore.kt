@@ -11,19 +11,19 @@ private const val PreferencesName = "pins"
 private const val Separator = "\n"
 private const val SlotsKey = "slots"
 
-internal fun List<String?>.withFirstFree(packageName: String): List<String?> {
+internal fun List<String?>.withFirstFree(id: String): List<String?> {
     val slot = indexOf(null)
-    return if (slot < 0 || packageName in this) this else withPinned(packageName, slot)
+    return if (slot < 0 || id in this) this else withPinned(id, slot)
 }
 
-internal fun List<String?>.withoutPackage(packageName: String): List<String?> =
-    map { pinned -> pinned.takeIf { it != packageName } }
+internal fun List<String?>.withoutId(id: String): List<String?> =
+    map { pinned -> pinned.takeIf { it != id } }
 
 internal fun List<String?>.withoutSlot(slot: Int): List<String?> =
     mapIndexed { index, pinned -> if (index == slot) null else pinned }
 
-internal fun List<String?>.withPinned(packageName: String, slot: Int): List<String?> =
-    mapIndexed { index, pinned -> if (index == slot) packageName else pinned.takeIf { it != packageName } }
+internal fun List<String?>.withPinned(id: String, slot: Int): List<String?> =
+    mapIndexed { index, pinned -> if (index == slot) id else pinned.takeIf { it != id } }
 
 class PinnedStore(context: Context) {
     private val preferences = context.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)
@@ -31,16 +31,16 @@ class PinnedStore(context: Context) {
 
     val slots: StateFlow<List<String?>> = state.asStateFlow()
 
-    fun dock(packageName: String) = write(state.value.withFirstFree(packageName))
+    fun dock(id: String) = write(state.value.withFirstFree(id))
 
-    fun pin(packageName: String, slot: Int) = write(state.value.withPinned(packageName, slot))
+    fun pin(id: String, slot: Int) = write(state.value.withPinned(id, slot))
 
     private fun read(): List<String?> {
         val saved = preferences.getString(SlotsKey, null)?.split(Separator).orEmpty()
         return List(PinSlots) { saved.getOrNull(it)?.takeIf(String::isNotEmpty) }
     }
 
-    fun undock(packageName: String) = write(state.value.withoutPackage(packageName))
+    fun undock(id: String) = write(state.value.withoutId(id))
 
     fun unpin(slot: Int) = write(state.value.withoutSlot(slot))
 

@@ -44,7 +44,7 @@ private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?) {
         )
         status is BluetoothStatus.Connected -> StatusChip(
             icon = CockpitIcons.Bluetooth,
-            label = status.deviceName,
+            label = status.deviceName.ifEmpty { stringResource(R.string.status_connected) },
             description = stringResource(R.string.bluetooth_connected, status.deviceName),
             iconColor = colors.accentInk,
             labelColor = colors.text2,

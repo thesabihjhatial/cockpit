@@ -36,18 +36,17 @@ suspend fun loadApps(context: Context): List<AppInfo> = withContext(Dispatchers.
     val metrics = context.resources.displayMetrics
     val iconSizePx = (IconSizeDp * minOf(metrics.widthPixels, metrics.heightPixels) / DesignHeight.toFloat()).roundToInt()
     launcherActivities(context)
-        .distinctBy { it.activityInfo.packageName }
-        .map {
+                .map {
             async {
-                val packageName = it.activityInfo.packageName
+                val id = it.componentName.flattenToString()
                 val drawable = it.loadIcon(packageManager)
                 val icon = drawable.toBitmap(iconSizePx, iconSizePx)
                 val version = File(it.activityInfo.applicationInfo.sourceDir).lastModified()
                 AppInfo(
-                    color = Color(TileColors.getOrPut("$packageName:$version") { tileColor(icon) }),
+                    color = Color(TileColors.getOrPut("$id:$version") { tileColor(icon) }),
                     icon = glyph(drawable, iconSizePx).asImageBitmap(),
+                    id = id,
                     label = it.loadLabel(packageManager).toString(),
-                    packageName = packageName,
                     tinted = drawable is AdaptiveIconDrawable,
                 )
             }

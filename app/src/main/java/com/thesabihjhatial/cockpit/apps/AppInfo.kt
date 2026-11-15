@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 data class AppInfo(
     val color: Color,
     val icon: ImageBitmap,
+    val id: String,
     val label: String,
-    val packageName: String,
     val tinted: Boolean,
 )

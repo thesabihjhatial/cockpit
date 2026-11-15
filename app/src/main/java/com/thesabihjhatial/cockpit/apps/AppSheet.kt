@@ -99,8 +99,8 @@ fun AppSheet(
             horizontalArrangement = Arrangement.spacedBy(Gap),
             verticalArrangement = Arrangement.spacedBy(Gap),
         ) {
-            items(apps, key = { it.packageName }) { app ->
-                val isDocked = app.packageName in docked
+            items(apps, key = { it.id }) { app ->
+                val isDocked = app.id in docked
                 AppTile(
                     app = app,
                     onClick = { if (sheet.isOpen) onSelect(app) else sheet.open() },

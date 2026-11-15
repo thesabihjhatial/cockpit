@@ -35,6 +35,7 @@ private fun glyph(name: String, vararg layers: Layer): ImageVector =
 object CockpitIcons {
     val Add = glyph("Add", Layer("M12 5v14M5 12h14", width = 2.2f))
     val Bluetooth = glyph("Bluetooth", Layer("M7 7l10 10-5 5V2l5 5L7 17", width = 2.2f))
+    val ChevronDown = glyph("ChevronDown", Layer("M6 9l6 6 6-6", width = 2.2f))
     val MusicNote = glyph(
         "MusicNote",
         Layer("M9 18V5l12-2v13", width = 1.5f),

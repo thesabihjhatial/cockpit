@@ -2,6 +2,11 @@ package com.thesabihjhatial.cockpit.home
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -32,17 +37,24 @@ import com.thesabihjhatial.cockpit.apps.SheetState
 import com.thesabihjhatial.cockpit.apps.launchApp
 import com.thesabihjhatial.cockpit.bluetooth.rememberBluetoothStatus
 import com.thesabihjhatial.cockpit.header.Header
+import com.thesabihjhatial.cockpit.media.ExpandedNowPlaying
 import com.thesabihjhatial.cockpit.media.NowPlayingPanel
 import com.thesabihjhatial.cockpit.media.rememberMediaState
+import com.thesabihjhatial.cockpit.media.rememberSpectrumAccess
 import com.thesabihjhatial.cockpit.network.rememberWifiStatus
 import com.thesabihjhatial.cockpit.permission.rememberPermissions
+import com.thesabihjhatial.cockpit.ui.FadeThrough
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+
+private const val ArtKey = "art"
+private const val ArtMs = 300
 
 private val FlingVelocity = 500.dp
 private val RowGap = 16.dp
 private val ScreenPadding = 32.dp
 private val SheetPeek = 48.dp
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val context = LocalContext.current
@@ -55,18 +67,31 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val locationGranted = permissions.access(Manifest.permission.ACCESS_FINE_LOCATION).granted
     val bluetoothStatus by rememberBluetoothStatus(bluetoothAccess.granted)
     val wifi by rememberWifiStatus(locationGranted)
-    val media = rememberMediaState()
+    val media = rememberMediaState(bluetoothStatus)
+    val nowPlaying = media.nowPlaying
     val apps by viewModel.apps.collectAsStateWithLifecycle()
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
     val slots by viewModel.slots.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    var expanded by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf<Int?>(null) }
     val sheet = remember { SheetState(scope) { picking = null } }
     val dragState = rememberDraggableState { sheet.dragBy(it) }
+    val showExpanded = expanded && nowPlaying != null
+    val spectrumAllowed = rememberSpectrumAccess(showExpanded)
 
     BackHandler(enabled = sheet.isVisible) { sheet.close() }
 
-    LaunchedEffect(Unit) { viewModel.homeRequests.collect { sheet.close() } }
+    BackHandler(enabled = showExpanded) { expanded = false }
+
+    LaunchedEffect(Unit) {
+        viewModel.homeRequests.collect {
+            sheet.close()
+            expanded = false
+        }
+    }
+
+    LaunchedEffect(nowPlaying == null) { if (nowPlaying == null) expanded = false }
 
     LaunchedEffect(ready) { if (ready) permissions.request() }
 
@@ -79,46 +104,76 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
             sheet.travel = with(density) { (maxHeight - SheetPeek).toPx() }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .draggable(
-                    state = dragState,
-                    orientation = Orientation.Vertical,
-                    onDragStopped = { sheet.settle(it) },
+        SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
+            AnimatedContent(
+                targetState = showExpanded,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .draggable(
+                        state = dragState,
+                        orientation = Orientation.Vertical,
+                        enabled = !showExpanded,
+                        onDragStopped = { sheet.settle(it) },
+                    )
+                    .padding(ScreenPadding),
+                transitionSpec = { FadeThrough },
+                label = "nowPlaying",
+            ) { isExpanded ->
+                val artModifier = Modifier.sharedElement(
+                    state = rememberSharedContentState(key = ArtKey),
+                    animatedVisibilityScope = this@AnimatedContent,
+                    boundsTransform = { _, _ -> tween(ArtMs, easing = FastOutSlowInEasing) },
                 )
-                .padding(ScreenPadding),
-            verticalArrangement = Arrangement.spacedBy(RowGap),
-        ) {
-            Header(
-                bluetoothAccess = bluetoothAccess,
-                bluetoothStatus = bluetoothStatus,
-                wifi = wifi,
-                modifier = Modifier.fillMaxWidth().height(rowHeight),
-            )
-            NowPlayingPanel(media = media, modifier = Modifier.fillMaxWidth().height(rowHeight * 2 + RowGap))
-            PinnedRow(
-                pinned = pinned,
-                onAdd = {
-                    picking = it
-                    sheet.open()
+                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RowGap)) {
+                    if (isExpanded && nowPlaying != null) {
+                        ExpandedNowPlaying(
+                            nowPlaying = nowPlaying,
+                            rowGap = RowGap,
+                            rowHeight = rowHeight,
+                            spectrumAllowed = spectrumAllowed,
+                            onCollapse = { expanded = false },
+                            artModifier = artModifier,
+                        )
+                    } else if (!isExpanded) {
+                        Header(
+                            bluetoothAccess = bluetoothAccess,
+                            bluetoothStatus = bluetoothStatus,
+                            wifi = wifi,
+                            modifier = Modifier.fillMaxWidth().height(rowHeight),
+                        )
+                        NowPlayingPanel(
+                            media = media,
+                            onExpand = { expanded = true },
+                            modifier = Modifier.fillMaxWidth().height(rowHeight * 2 + RowGap),
+                            artModifier = artModifier,
+                        )
+                        PinnedRow(
+                            pinned = pinned,
+                            onAdd = {
+                                picking = it
+                                sheet.open()
+                            },
+                            onLaunch = { context.launchApp(it.id) },
+                            onUnpin = viewModel::unpin,
+                            modifier = Modifier.fillMaxWidth().height(rowHeight),
+                        )
+                    }
+                }
+            }
+        }
+        if (!showExpanded) {
+            AppSheet(
+                apps = apps,
+                docked = slots.filterNotNull().toSet(),
+                dockFull = slots.all { it != null },
+                onDock = { viewModel.dock(it.id) },
+                onSelect = { app ->
+                    picking?.let { viewModel.pin(app.id, it) } ?: context.launchApp(app.id)
+                    sheet.close()
                 },
-                onLaunch = { context.launchApp(it.packageName) },
-                onUnpin = viewModel::unpin,
-                modifier = Modifier.fillMaxWidth().height(rowHeight),
+                onUndock = { viewModel.undock(it.id) },
+                sheet = sheet,
             )
         }
-        AppSheet(
-            apps = apps,
-            docked = slots.filterNotNull().toSet(),
-            dockFull = slots.all { it != null },
-            onDock = { viewModel.dock(it.packageName) },
-            onSelect = { app ->
-                picking?.let { viewModel.pin(app.packageName, it) } ?: context.launchApp(app.packageName)
-                sheet.close()
-            },
-            onUndock = { viewModel.undock(it.packageName) },
-            sheet = sheet,
-        )
     }
 }

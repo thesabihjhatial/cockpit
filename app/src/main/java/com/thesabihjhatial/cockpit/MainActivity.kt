@@ -14,12 +14,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.thesabihjhatial.cockpit.clock.rememberNow
+import com.thesabihjhatial.cockpit.display.rememberHeadlightsOn
 import com.thesabihjhatial.cockpit.home.HomeScreen
 import com.thesabihjhatial.cockpit.home.HomeViewModel
 import com.thesabihjhatial.cockpit.splash.SplashGate
 import com.thesabihjhatial.cockpit.ui.CockpitTheme
 import com.thesabihjhatial.cockpit.ui.DesignScale
 import com.thesabihjhatial.cockpit.ui.cockpitColors
+import com.thesabihjhatial.cockpit.ui.isDark
 import com.thesabihjhatial.cockpit.ui.isNight
 import java.time.LocalTime
 
@@ -40,7 +42,9 @@ class MainActivity : ComponentActivity() {
         paintWindow(isNight(LocalTime.now().hour))
         setContent {
             val now by rememberNow()
-            val night = isNight(now.hour)
+            val headlights by rememberHeadlightsOn()
+
+            val night = isDark(now.hour, headlights)
 
             SideEffect { paintWindow(night) }
 

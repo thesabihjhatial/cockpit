@@ -11,10 +11,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -23,12 +26,18 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 
 private const val A2dpSinkProfile = 11
+private const val AvrcpControllerProfile = 12
 private const val HeadsetClientProfile = 16
+private const val PbapClientProfile = 17
 private const val SettleMs = 500L
+
+private val AudioTypes = setOf(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
 
 private val ConnectionActions = listOf(
     "android.bluetooth.a2dp-sink.profile.action.CONNECTION_STATE_CHANGED",
+    "android.bluetooth.avrcp-controller.profile.action.CONNECTION_STATE_CHANGED",
     "android.bluetooth.headsetclient.profile.action.CONNECTION_STATE_CHANGED",
+    "android.bluetooth.pbapclient.profile.action.CONNECTION_STATE_CHANGED",
     BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED,
     BluetoothAdapter.ACTION_STATE_CHANGED,
     BluetoothDevice.ACTION_ACL_CONNECTED,
@@ -38,9 +47,11 @@ private val ConnectionActions = listOf(
 
 private val ConnectionProfiles = listOf(
     A2dpSinkProfile,
+    AvrcpControllerProfile,
     BluetoothProfile.A2DP,
     BluetoothProfile.HEADSET,
     HeadsetClientProfile,
+    PbapClientProfile,
 )
 
 @SuppressLint("MissingPermission")
@@ -52,20 +63,44 @@ fun bluetoothStatusFlow(context: Context): Flow<BluetoothStatus> = callbackFlow 
         return@callbackFlow
     }
 
-    val expected = AtomicInteger(Int.MAX_VALUE)
+    val audio = context.getSystemService(AudioManager::class.java)
+    val links = ConcurrentHashMap<String, String>()
     val proxies = ConcurrentHashMap<Int, BluetoothProfile>()
+    var settling: Job? = null
+
+    fun audioName(): String? = audio.getDevices(AudioManager.GET_DEVICES_ALL)
+        .firstOrNull { it.type in AudioTypes }
+        ?.productName?.toString()
+
+    fun bondedName(): String? = adapter.bondedDevices.orEmpty().firstOrNull { it.isLinkUp() }?.displayName()
+
+    fun profileConnected(): Boolean = ConnectionProfiles.any {
+        runCatching { adapter.getProfileConnectionState(it) == BluetoothProfile.STATE_CONNECTED }.getOrDefault(false)
+    }
+
+    fun profileName(): String? = proxies.values.flatMap { it.connectedDevices }.firstOrNull()?.displayName()
 
     fun publish() {
         if (!adapter.isEnabled) {
             trySend(BluetoothStatus.Disconnected)
             return
         }
-        if (proxies.size < expected.get()) return
-        val device = proxies.values.flatMap { it.connectedDevices }.firstOrNull()
+        val name = profileName() ?: links.values.firstOrNull() ?: bondedName() ?: audioName()
         trySend(
-            device?.let { BluetoothStatus.Connected(it.displayName()) }
-                ?: BluetoothStatus.Disconnected,
+            when {
+                name != null -> BluetoothStatus.Connected(name)
+                profileConnected() -> BluetoothStatus.Connected("")
+                else -> BluetoothStatus.Disconnected
+            },
         )
+    }
+
+    fun settle() {
+        settling?.cancel()
+        settling = launch {
+            delay(SettleMs)
+            publish()
+        }
     }
 
     val serviceListener = object : BluetoothProfile.ServiceListener {
@@ -75,7 +110,7 @@ fun bluetoothStatusFlow(context: Context): Flow<BluetoothStatus> = callbackFlow 
         }
 
         override fun onServiceDisconnected(profile: Int) {
-            if (proxies.remove(profile) != null) expected.decrementAndGet()
+            proxies.remove(profile)
             publish()
         }
     }
@@ -87,31 +122,45 @@ fun bluetoothStatusFlow(context: Context): Flow<BluetoothStatus> = callbackFlow 
 
     fun connect() {
         release()
-        expected.set(Int.MAX_VALUE)
-        expected.set(ConnectionProfiles.count { adapter.getProfileProxy(context, serviceListener, it) })
+        links.clear()
+        ConnectionProfiles.forEach { adapter.getProfileProxy(context, serviceListener, it) }
         publish()
     }
 
-    var settling: Job? = null
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(receiverContext: Context, intent: Intent) {
-            if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
-                connect()
-            } else {
-                settling?.cancel()
-                settling = launch {
-                    delay(SettleMs)
-                    publish()
+            val device = IntentCompat.getParcelableExtra(intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+            when (intent.action) {
+                BluetoothAdapter.ACTION_STATE_CHANGED -> connect()
+                BluetoothDevice.ACTION_ACL_CONNECTED -> {
+                    device?.let { links[it.address] = it.displayName() }
+                    settle()
                 }
+                BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+                    device?.let { links.remove(it.address) }
+                    settle()
+                }
+                else -> settle()
             }
+        }
+    }
+    val audioCallback = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+            settle()
+        }
+
+        override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+            settle()
         }
     }
 
     val filter = IntentFilter().apply { ConnectionActions.forEach(::addAction) }
     ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+    audio.registerAudioDeviceCallback(audioCallback, null)
     connect()
     awaitClose {
         context.unregisterReceiver(receiver)
+        audio.unregisterAudioDeviceCallback(audioCallback)
         release()
     }
 }
@@ -119,3 +168,7 @@ fun bluetoothStatusFlow(context: Context): Flow<BluetoothStatus> = callbackFlow 
 @SuppressLint("MissingPermission")
 private fun BluetoothDevice.displayName(): String =
     (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) alias else null) ?: name ?: address
+
+private fun BluetoothDevice.isLinkUp(): Boolean = runCatching {
+    BluetoothDevice::class.java.getMethod("isConnected").invoke(this) as Boolean
+}.getOrDefault(false)

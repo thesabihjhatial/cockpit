@@ -42,8 +42,8 @@ class PinnedStoreTest {
     }
 
     @Test
-    fun undockingClearsByPackage() {
-        val slots = listOf("a", "b", "c", "d").withoutPackage("c")
+    fun undockingClearsById() {
+        val slots = listOf("a", "b", "c", "d").withoutId("c")
         assertEquals(listOf("a", "b", null, "d"), slots)
     }
 
