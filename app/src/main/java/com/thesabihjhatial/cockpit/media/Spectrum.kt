@@ -72,7 +72,7 @@ private fun startVisualizer(onLevels: (FloatArray?) -> Unit): Visualizer {
 
             override fun onWaveFormDataCapture(visualizer: Visualizer, waveform: ByteArray, samplingRate: Int) = Unit
         },
-        Visualizer.getMaxCaptureRate() / 2,
+        Visualizer.getMaxCaptureRate(),
         false,
         true,
     )

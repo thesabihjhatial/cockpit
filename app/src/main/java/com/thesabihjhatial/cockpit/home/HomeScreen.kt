@@ -47,7 +47,7 @@ import com.thesabihjhatial.cockpit.ui.FadeThrough
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 
 private const val ArtKey = "art"
-private const val ArtMs = 300
+private const val ArtMs = 250
 
 private val FlingVelocity = 500.dp
 private val RowGap = 16.dp

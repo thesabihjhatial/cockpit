@@ -48,9 +48,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val DurationMs = 3000
-private const val EnterDurationMs = 300
+private const val EnterDurationMs = 250
 private const val EnterScale = 0.96f
-private const val ExitDurationMs = 150
+private const val ExitDurationMs = 250
 private const val NeedleRestAngle = 0f
 private const val NeedleStartAngle = -120f
 

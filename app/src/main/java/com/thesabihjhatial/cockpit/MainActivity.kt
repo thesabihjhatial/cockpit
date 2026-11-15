@@ -20,6 +20,7 @@ import com.thesabihjhatial.cockpit.home.HomeViewModel
 import com.thesabihjhatial.cockpit.splash.SplashGate
 import com.thesabihjhatial.cockpit.ui.CockpitTheme
 import com.thesabihjhatial.cockpit.ui.DesignScale
+import com.thesabihjhatial.cockpit.ui.ThemeFade
 import com.thesabihjhatial.cockpit.ui.cockpitColors
 import com.thesabihjhatial.cockpit.ui.isDark
 import com.thesabihjhatial.cockpit.ui.isNight
@@ -44,13 +45,14 @@ class MainActivity : ComponentActivity() {
             val now by rememberNow()
             val headlights by rememberHeadlightsOn()
 
-            val night = isDark(now.hour, headlights)
 
-            SideEffect { paintWindow(night) }
+            ThemeFade(night = isDark(now.hour, headlights)) { night ->
+                SideEffect { paintWindow(night) }
 
-            CockpitTheme(night = night) {
-                DesignScale {
-                    SplashGate { ready -> HomeScreen(ready = ready, viewModel = viewModel) }
+                CockpitTheme(night = night) {
+                    DesignScale {
+                        SplashGate { ready -> HomeScreen(ready = ready, viewModel = viewModel) }
+                    }
                 }
             }
         }

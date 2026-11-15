@@ -1,7 +1,5 @@
 package com.thesabihjhatial.cockpit.ui
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.darkColorScheme
@@ -15,7 +13,6 @@ import androidx.compose.ui.text.TextStyle
 
 private const val NightEndHour = 6
 private const val NightStartHour = 18
-private const val ThemeFadeMs = 125
 
 @Immutable
 data class CockpitColors(
@@ -65,25 +62,6 @@ val NightColors = CockpitColors(
     track = Color(0xFF2A2A2D),
 )
 
-@Composable
-private fun animated(target: CockpitColors): CockpitColors {
-    val spec = tween<Color>(ThemeFadeMs)
-    return CockpitColors(
-        accent = animateColorAsState(target.accent, spec, label = "accent").value,
-        accentInk = animateColorAsState(target.accentInk, spec, label = "accentInk").value,
-        accentSoft = animateColorAsState(target.accentSoft, spec, label = "accentSoft").value,
-        background = animateColorAsState(target.background, spec, label = "background").value,
-        line = animateColorAsState(target.line, spec, label = "line").value,
-        muted = animateColorAsState(target.muted, spec, label = "muted").value,
-        raised = animateColorAsState(target.raised, spec, label = "raised").value,
-        ring = animateColorAsState(target.ring, spec, label = "ring").value,
-        surface = animateColorAsState(target.surface, spec, label = "surface").value,
-        text = animateColorAsState(target.text, spec, label = "text").value,
-        text2 = animateColorAsState(target.text2, spec, label = "text2").value,
-        track = animateColorAsState(target.track, spec, label = "track").value,
-    )
-}
-
 fun cockpitColors(night: Boolean): CockpitColors = if (night) NightColors else DayColors
 
 fun isDark(hour: Int, headlights: Boolean): Boolean = headlights || isNight(hour)
@@ -92,7 +70,7 @@ fun isNight(hour: Int): Boolean = hour >= NightStartHour || hour < NightEndHour
 
 @Composable
 fun CockpitTheme(night: Boolean, content: @Composable () -> Unit) {
-    val colors = animated(cockpitColors(night))
+    val colors = cockpitColors(night)
     val scheme = (if (night) darkColorScheme() else lightColorScheme()).copy(
         background = colors.background,
         onBackground = colors.text,

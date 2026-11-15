@@ -41,7 +41,7 @@ fun ColumnScope.ExpandedNowPlaying(
     val context = LocalContext.current
     val collapseLabel = stringResource(R.string.media_collapse)
     val position by rememberPosition(nowPlaying)
-    val spectrum by rememberSpectrum(spectrumAllowed, nowPlaying.playing)
+    val spectrum = rememberSpectrum(spectrumAllowed, nowPlaying.playing)
     val fraction = if (nowPlaying.duration > 0) position.toFloat() / nowPlaying.duration else 0f
 
     Row(
