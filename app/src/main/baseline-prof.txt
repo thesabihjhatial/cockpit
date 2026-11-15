@@ -1,0 +1,2 @@
+HSPLcom/thesabihjhatial/cockpit/**;->**(**)**
+Lcom/thesabihjhatial/cockpit/**;

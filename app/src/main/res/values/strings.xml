@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cockpit</string>
+    <string name="apps_title">All your apps</string>
+    <string name="bluetooth_allow">Allow Bluetooth</string>
+    <string name="bluetooth_connected">Connected to %1$s</string>
+    <string name="bluetooth_disconnected">Bluetooth not connected</string>
+    <string name="dock_add">Add app</string>
+    <string name="dock_add_to">Add to dock</string>
+    <string name="dock_badge">Docked</string>
+    <string name="dock_full">Dock is full</string>
+    <string name="dock_remove">Remove from dock</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_night">Good night</string>
+    <string name="logo_description">Cockpit</string>
+    <string name="media_allow">Allow access</string>
+    <string name="media_allow_message">Allow notification access to show what\'s playing</string>
+    <string name="media_next">Next track</string>
+    <string name="media_now_playing">Now playing · %1$s</string>
+    <string name="media_pause">Pause</string>
+    <string name="media_play">Play</string>
+    <string name="media_previous">Previous track</string>
+    <string name="media_unknown_track">Unknown track</string>
+    <string name="settings_title">Settings</string>
+    <string name="splash_status">Starting up</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_not_connected">Not connected</string>
+    <string name="wifi_connected">Wi-Fi connected</string>
+    <string name="wifi_disconnected">Wi-Fi not connected</string>
+</resources>
