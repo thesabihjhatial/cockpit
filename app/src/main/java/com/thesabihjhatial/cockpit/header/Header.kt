@@ -2,12 +2,11 @@ package com.thesabihjhatial.cockpit.header
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,6 +17,7 @@ import com.thesabihjhatial.cockpit.bluetooth.BluetoothStatus
 import com.thesabihjhatial.cockpit.network.WifiStatus
 import com.thesabihjhatial.cockpit.permission.PermissionAccess
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.Text
 import java.time.LocalDateTime
 
 @Composable

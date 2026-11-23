@@ -1,8 +1,8 @@
 package com.thesabihjhatial.cockpit.clock
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.State
 import androidx.compose.ui.platform.LocalContext
 import java.time.Duration
 import java.time.LocalDateTime

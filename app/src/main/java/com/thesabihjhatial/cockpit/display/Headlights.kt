@@ -6,14 +6,14 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.State
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.Flow
 
 private const val DimThreshold = 0.5f
 private const val MaxBrightness = 255f

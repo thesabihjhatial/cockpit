@@ -3,33 +3,33 @@ package com.thesabihjhatial.cockpit.header
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.bluetooth.BluetoothStatus
 import com.thesabihjhatial.cockpit.network.WifiStatus
 import com.thesabihjhatial.cockpit.permission.PermissionAccess
+import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.settings.SettingsId
+import com.thesabihjhatial.cockpit.ui.CircularProgressIndicator
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.Icon
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.Text
 
 @Composable
 private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?, launching: String?, onRequest: () -> Unit) {

@@ -8,8 +8,8 @@ import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.Flow
 
 private const val UnknownSsid = "<unknown ssid>"
 
@@ -19,12 +19,9 @@ private fun networkName(context: Context): String? =
         ?.removeSurrounding("\"")
         ?.takeUnless { it.isEmpty() || it == UnknownSsid }
 
-@Suppress("DEPRECATION")
 fun isWifiConnected(context: Context): Boolean {
     val manager = context.getSystemService(ConnectivityManager::class.java)
-    return manager.allNetworks.any {
-        manager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-    }
+    return manager.getNetworkCapabilities(manager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
 }
 
 fun wifiStatus(context: Context): WifiStatus {

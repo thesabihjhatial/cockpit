@@ -52,4 +52,22 @@ class PinnedStoreTest {
         val slots = listOf("a", "b", "c").withoutSlot(1)
         assertEquals(listOf("a", null, "c"), slots)
     }
+
+    @Test
+    fun reconcilingKeepsIdsThatStillResolve() {
+        val slots = listOf("a", "b", null).withoutUnknown(setOf("a", "b"))
+        assertEquals(listOf("a", "b", null), slots)
+    }
+
+    @Test
+    fun reconcilingClearsAnUninstalledAppWithoutMovingTheRest() {
+        val slots = listOf("a", "gone", "c", null).withoutUnknown(setOf("a", "c"))
+        assertEquals(listOf("a", null, "c", null), slots)
+    }
+
+    @Test
+    fun reconcilingAgainstNoKnownIdsFreesEverySlot() {
+        val slots = listOf("a", "b", "c", "d").withoutUnknown(emptySet())
+        assertEquals(List(PinSlots) { null }, slots)
+    }
 }

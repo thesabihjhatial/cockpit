@@ -4,14 +4,14 @@ import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,26 +22,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.Lifecycle
 import com.thesabihjhatial.cockpit.apps.AppInfo
 import com.thesabihjhatial.cockpit.apps.AppSheet
-import com.thesabihjhatial.cockpit.apps.SheetState
 import com.thesabihjhatial.cockpit.apps.launchApp
+import com.thesabihjhatial.cockpit.apps.SheetState
 import com.thesabihjhatial.cockpit.bluetooth.rememberBluetoothStatus
 import com.thesabihjhatial.cockpit.clock.rememberNow
 import com.thesabihjhatial.cockpit.header.ExpandedClock
@@ -54,9 +54,9 @@ import com.thesabihjhatial.cockpit.network.rememberWifiStatus
 import com.thesabihjhatial.cockpit.permission.rememberPermissions
 import com.thesabihjhatial.cockpit.settings.BluetoothAccessId
 import com.thesabihjhatial.cockpit.settings.MediaAccessId
-import com.thesabihjhatial.cockpit.settings.SettingsId
 import com.thesabihjhatial.cockpit.settings.openNotificationAccessSettings
 import com.thesabihjhatial.cockpit.settings.openSystemSettings
+import com.thesabihjhatial.cockpit.settings.SettingsId
 import com.thesabihjhatial.cockpit.ui.FadeInDelayMs
 import com.thesabihjhatial.cockpit.ui.FadeInMs
 import com.thesabihjhatial.cockpit.ui.FadeThrough
@@ -84,6 +84,7 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val permissions = rememberPermissions(
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
     )
     val bluetoothAccess = permissions.access(Manifest.permission.BLUETOOTH_CONNECT)
     val locationGranted = permissions.access(Manifest.permission.ACCESS_FINE_LOCATION).granted

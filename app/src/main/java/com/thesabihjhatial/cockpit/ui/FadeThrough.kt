@@ -1,17 +1,17 @@
 package com.thesabihjhatial.cockpit.ui
 
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 
-const val FadeInDelayMs = 75
-const val FadeInMs = 175
-const val FadeOutMs = 75
+const val FadeInDelayMs = 37
+const val FadeInMs = 88
+const val FadeOutMs = 37
 private const val InitialScale = 0.94f
 
 val FadeThroughEnter: EnterTransition = fadeIn(tween(FadeInMs, FadeInDelayMs))

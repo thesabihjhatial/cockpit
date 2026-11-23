@@ -3,22 +3,21 @@ package com.thesabihjhatial.cockpit.media
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.State
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
-import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.exp
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.roundToInt
 
 private const val Center = 10
 private const val FallSeconds = 0.14f
@@ -26,11 +25,31 @@ private const val MinScale = 0.22f
 private const val NanosPerSecond = 1_000_000_000f
 private const val RiseSeconds = 0.05f
 
-private fun opacity(index: Int): Float = 0.55f + 0.45f * (1f - abs(index - Center) / Center.toFloat())
+/** Each of the [BarCount] columns is drawn as this many stacked segments. */
+private const val Rows = 21
+
+private const val Saturation = 0.85f
+private const val Brightness = 0.98f
+
+private const val GreenHue = 120f
+
+/**
+ * Thirds of the height, matching the 21 rows: rows 0-6 are solid green, 14-20 solid red,
+ * and 7-13 carry the whole blend. Interpolating hue linearly across that middle third
+ * keeps the fade even, with yellow landing on the middle row.
+ */
+private const val BlendFrom = 1f / 3f
+private const val BlendTo = 2f / 3f
+
+private fun rowColor(row: Int): Color {
+    val height = row / (Rows - 1).toFloat()
+    val red = ((height - BlendFrom) / (BlendTo - BlendFrom)).coerceIn(0f, 1f)
+    return Color.hsv(hue = GreenHue * (1f - red), saturation = Saturation, value = Brightness)
+}
 
 private fun peak(index: Int): Float {
     val distance = abs(index - Center) / Center.toFloat()
-    return min(100f, 34f + 62f * cos(distance * PI.toFloat() / 2f) + (index * 37) % 11 - 5f) / 100f
+    return (34f + 62f * cos(distance * PI.toFloat() / 2f) + (index * 37) % 11 - 5f).coerceAtMost(100f) / 100f
 }
 
 private fun wave(index: Int, time: Float): Float {
@@ -43,7 +62,6 @@ private fun wave(index: Int, time: Float): Float {
 
 @Composable
 fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Modifier = Modifier) {
-    val accent = LocalCockpitColors.current.accent
     val levels = remember { FloatArray(BarCount) }
     val frame = remember { mutableLongStateOf(0L) }
     val clock = remember { floatArrayOf(0f) }
@@ -70,16 +88,32 @@ fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Mod
     Canvas(modifier = modifier) {
         frame.longValue
         val gap = 12.dp.toPx()
+        val rowGap = 3.dp.toPx()
         val barWidth = (size.width - gap * (BarCount - 1)) / BarCount
-        val top = CornerRadius(10.dp.toPx())
-        val bottom = CornerRadius(4.dp.toPx())
-        val floor = 8.dp.toPx()
-        repeat(BarCount) { index ->
-            val height = max(floor, size.height * peak(index) * levels[index])
-            val left = index * (barWidth + gap)
+        val cell = (size.height - rowGap * (Rows - 1)) / Rows
+        val pitch = cell + rowGap
+        val corner = CornerRadius(2.dp.toPx())
+
+        val lit = IntArray(BarCount) { index ->
+            (peak(index) * levels[index] * Rows).roundToInt().coerceIn(0, Rows)
+        }
+
+        // One path per row, spanning every column lit that high: 21 draw calls, and
+        // every row carries its own hue.
+        repeat(Rows) { row ->
             path.reset()
-            path.addRoundRect(RoundRect(left, size.height - height, left + barWidth, size.height, top, top, bottom, bottom))
-            drawPath(path, accent.copy(alpha = opacity(index)))
+            var painted = false
+            repeat(BarCount) { index ->
+                if (row < lit[index]) {
+                    val left = index * (barWidth + gap)
+                    val bottom = size.height - row * pitch
+                    path.addRoundRect(
+                        RoundRect(left, bottom - cell, left + barWidth, bottom, corner, corner, corner, corner),
+                    )
+                    painted = true
+                }
+            }
+            if (painted) drawPath(path, rowColor(row))
         }
     }
 }

@@ -6,21 +6,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.Text
 
 private val ColumnGap = 16.dp
 
@@ -148,23 +148,24 @@ fun NowPlayingPanel(
         nowPlaying == null -> Box(modifier)
         else -> BoxWithConstraints(modifier) {
             val column = (maxWidth - ColumnGap * 3) / 4
+            val artSize = minOf(column, maxHeight)
 
             Row(
                 modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(ColumnGap),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
                     modifier = Modifier
-                        .width(column * 3 + ColumnGap * 2)
+                        .width(artSize * 3 + ColumnGap * 2)
                         .clickable(onClickLabel = stringResource(R.string.media_expand), onClick = onExpand),
                     horizontalArrangement = Arrangement.spacedBy(ColumnGap),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Art(nowPlaying, artModifier.size(column))
-                    Info(nowPlaying, Modifier.width(column * 2 + ColumnGap).height(column))
+                    Art(nowPlaying, artModifier.size(artSize))
+                    Info(nowPlaying, Modifier.width(artSize * 2 + ColumnGap).height(artSize))
                 }
-                Controls(nowPlaying, Modifier.width(column))
+                Controls(nowPlaying, Modifier.width(artSize))
             }
         }
     }

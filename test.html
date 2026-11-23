@@ -70,9 +70,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   --track: #2a2a2d;
 }
 
-.screen { position: absolute; inset: 0; transform: scale(0.96); transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1); }
+.screen { position: absolute; inset: 0; transform: scale(0.96); transition: transform 125ms cubic-bezier(0.4, 0, 0.2, 1); }
 .screen.ready { transform: scale(1); }
-.veil { position: absolute; inset: 0; z-index: 50; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 125ms linear; }
+.veil { position: absolute; inset: 0; z-index: 50; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 62ms linear; }
 
 .home { position: absolute; inset: 0; padding: 32px; display: grid; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
@@ -146,7 +146,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .home.fading-out .x-text,
 .home.fading-out .x-chevron,
 .home.fading-out .viz,
-.home.fading-out .x-controls { animation: fade-out 75ms ease-out forwards; }
+.home.fading-out .x-controls { animation: fade-out 37ms ease-out forwards; }
 .home.fading-in > .header,
 .home.fading-in > .dock,
 .home.fading-in .now .info,
@@ -155,7 +155,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .home.fading-in .x-text,
 .home.fading-in .x-chevron,
 .home.fading-in .viz,
-.home.fading-in .x-controls { animation: fade-in 175ms cubic-bezier(0.4, 0, 0.2, 1) 75ms backwards; }
+.home.fading-in .x-controls { animation: fade-in 88ms cubic-bezier(0.4, 0, 0.2, 1) 37ms backwards; }
 .expanded-view { display: none; }
 .clock-view { display: none; }
 .time, .c-time { display: inline-block; }
@@ -165,14 +165,14 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .home.clock-out .c-row,
 .home.clock-out .c-date,
 .home.clock-out > .now,
-.home.clock-out > .dock { animation: fade-out 75ms ease-out forwards; }
+.home.clock-out > .dock { animation: fade-out 37ms ease-out forwards; }
 .home.clock-in .header > .greeting,
 .home.clock-in .header .date,
 .home.clock-in .header .status,
 .home.clock-in .c-row,
 .home.clock-in .c-date,
 .home.clock-in > .now,
-.home.clock-in > .dock { animation: fade-in 175ms cubic-bezier(0.4, 0, 0.2, 1) 75ms backwards; }
+.home.clock-in > .dock { animation: fade-in 88ms cubic-bezier(0.4, 0, 0.2, 1) 37ms backwards; }
 .home.clocking > .header, .home.clocking > .now, .home.clocking > .dock { display: none; }
 .home.clocking > .clock-view { display: contents; }
 .c-row { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: center; }
@@ -203,9 +203,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .peek { position: absolute; left: 32px; right: 32px; bottom: 0; height: 32px; z-index: 6; }
 .drawer { position: absolute; inset: 0; z-index: 5; transform: translateY(672px); pointer-events: none; }
 .drawer.open { pointer-events: auto; }
-.drawer.animating { transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1); }
+.drawer.animating { transition: transform 125ms cubic-bezier(0.4, 0, 0.2, 1); }
 .drawer-bg { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
-.drawer.animating .drawer-bg, .drawer.animating .drawer-title { transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1); }
+.drawer.animating .drawer-bg, .drawer.animating .drawer-title { transition: opacity 125ms cubic-bezier(0.4, 0, 0.2, 1); }
 .drawer-grid { position: absolute; inset: 0; padding: 32px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 152px; gap: 16px; align-content: start; overflow-y: auto; scrollbar-width: none; }
 .drawer-grid::-webkit-scrollbar { display: none; }
 .drawer-title { position: absolute; top: 0; left: 0; right: 0; height: 32px; padding: 0 32px; background: var(--bg); display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); opacity: 0; pointer-events: none; }
@@ -218,7 +218,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .menu button:disabled { color: var(--muted); cursor: default; }
 .menu[hidden] { display: none; }
 
-.splash { position: absolute; inset: 0; z-index: 10; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; transition: opacity 250ms; }
+.splash { position: absolute; inset: 0; z-index: 10; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; transition: opacity 125ms; }
 .splash.out { opacity: 0; pointer-events: none; }
 .splash-mark { display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .splash-mark svg { width: 104px; height: 104px; }
@@ -327,11 +327,11 @@ const Apps = [
 const Days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DefaultPinned = ['Maps', 'Netflix', 'Spotify', 'YouTube'];
 const DragSlop = 8;
-const ArtMs = 175;
+const ArtMs = 88;
 const CollapsedArtRadius = 20;
 const ExpandedArtRadius = 16;
-const FadeInMs = 175;
-const FadeOutMs = 75;
+const FadeInMs = 88;
+const FadeOutMs = 37;
 const FlingVelocity = 0.5;
 const HoldMs = 400;
 const LaunchMs = 1500;
@@ -341,10 +341,10 @@ const NightStartHour = 18;
 const PinSlots = 4;
 const SheetTravel = 672;
 const SplashDurationMs = 3000;
-const SplashExitMs = 250;
+const SplashExitMs = 125;
 const StorageKey = 'cockpit.pinned.v3';
-const ThemeInMs = 125;
-const ThemeOutMs = 125;
+const ThemeInMs = 62;
+const ThemeOutMs = 63;
 
 const Glyphs = {
   Calendar: { path: 'M18.316 5.684H24v12.632h-5.684V5.684zM5.684 24h12.632v-5.684H5.684V24zM18.316 5.684V0H1.895A1.894 1.894 0 0 0 0 1.895v16.421h5.684V5.684h12.632zm-7.207 6.25v-.065c.272-.144.5-.349.687-.617s.279-.595.279-.982c0-.379-.099-.72-.3-1.025a2.05 2.05 0 0 0-.832-.714 2.703 2.703 0 0 0-1.197-.257c-.6 0-1.094.156-1.481.467-.386.311-.65.671-.793 1.078l1.085.452c.086-.249.224-.461.413-.633.189-.172.445-.257.767-.257.33 0 .602.088.816.264a.86.86 0 0 1 .322.703c0 .33-.12.589-.36.778-.24.19-.535.284-.886.284h-.567v1.085h.633c.407 0 .748.109 1.02.327.272.218.407.499.407.843 0 .336-.129.614-.387.832s-.565.327-.924.327c-.351 0-.651-.103-.897-.311-.248-.208-.422-.502-.521-.881l-1.096.452c.178.616.505 1.082.977 1.401.472.319.984.478 1.538.477a2.84 2.84 0 0 0 1.293-.291c.382-.193.684-.458.902-.794.218-.336.327-.72.327-1.149 0-.429-.115-.797-.344-1.105a2.067 2.067 0 0 0-.881-.689zm2.093-1.931l.602.913L15 10.045v5.744h1.187V8.446h-.827l-2.158 1.557zM22.105 0h-3.289v5.184H24V1.895A1.894 1.894 0 0 0 22.105 0zm-3.289 23.5l4.684-4.684h-4.684V23.5zM0 22.105C0 23.152.848 24 1.895 24h3.289v-5.184H0v3.289z' },

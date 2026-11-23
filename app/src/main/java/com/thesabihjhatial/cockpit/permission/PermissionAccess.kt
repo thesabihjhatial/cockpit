@@ -1,10 +1,11 @@
 package com.thesabihjhatial.cockpit.permission
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.Manifest
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -18,8 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.Lifecycle
 
 class PermissionAccess(val granted: Boolean, val request: () -> Unit)
 
@@ -38,6 +39,12 @@ private fun Context.hasPermission(permission: String): Boolean =
     (permission == Manifest.permission.BLUETOOTH_CONNECT && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) ||
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 private fun Context.openAppSettings() {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
     runCatching { startActivity(intent) }
@@ -51,8 +58,9 @@ fun rememberPermissions(vararg permissions: String): Permissions {
     var settingsOnBlock by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         granted = context.grantedPermissions(permissions)
+        val activity = context.findActivity()
         blocked = result.filterValues { !it }.keys
-            .filterNot { ActivityCompat.shouldShowRequestPermissionRationale(context as Activity, it) }
+            .filter { permission -> activity != null && !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission) }
             .toSet()
         if (settingsOnBlock && blocked.isNotEmpty()) context.openAppSettings()
         settingsOnBlock = false

@@ -18,11 +18,11 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private const val A2dpSinkProfile = 11
@@ -68,14 +68,14 @@ fun bluetoothStatusFlow(context: Context): Flow<BluetoothStatus> = callbackFlow 
     val proxies = ConcurrentHashMap<Int, BluetoothProfile>()
     var settling: Job? = null
 
-    fun audioName(): String? = audio.getDevices(AudioManager.GET_DEVICES_ALL)
+    fun audioName(): String? = audio.getDevices(AudioManager.GET_DEVICES_INPUTS or AudioManager.GET_DEVICES_OUTPUTS)
         .firstOrNull { it.type in AudioTypes }
         ?.productName?.toString()
 
     fun bondedName(): String? = adapter.bondedDevices.orEmpty().firstOrNull { it.isLinkUp() }?.displayName()
 
     fun profileConnected(): Boolean = ConnectionProfiles.any {
-        runCatching { adapter.getProfileConnectionState(it) == BluetoothProfile.STATE_CONNECTED }.getOrDefault(false)
+        runCatching { adapter.getProfileConnectionState(it) == BluetoothAdapter.STATE_CONNECTED }.getOrDefault(false)
     }
 
     fun profileName(): String? = proxies.values.flatMap { it.connectedDevices }.firstOrNull()?.displayName()

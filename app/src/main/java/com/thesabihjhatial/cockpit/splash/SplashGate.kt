@@ -1,13 +1,14 @@
 package com.thesabihjhatial.cockpit.splash
 
+import android.os.SystemClock
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,19 +22,18 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,15 +42,24 @@ import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.Gauge
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.Text
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val DurationMs = 3000
-private const val EnterDurationMs = 250
+/** How long the logo animation runs; also the shortest time the splash stays up. */
+private const val SplashMs = 1200
+
+/** Ceiling for a slow first app scan, so the launcher can always appear. */
+private const val MaxSplashMs = 3000L
+
+private const val EnterDurationMs = 125
 private const val EnterScale = 0.96f
-private const val ExitDurationMs = 250
+private const val ExitDurationMs = 125
+private const val NeedleOvershoot = 18f
 private const val NeedleRestAngle = 0f
 private const val NeedleStartAngle = -120f
+private const val OvershootAtPercent = 55
+private const val RestAtPercent = 75
 
 @Composable
 private fun Splash() {
@@ -59,13 +68,13 @@ private fun Splash() {
     val progress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        launch { progress.animateTo(1f, tween(DurationMs, easing = LinearEasing)) }
+        launch { progress.animateTo(1f, tween(SplashMs, easing = LinearEasing)) }
         needle.animateTo(
             NeedleRestAngle,
             keyframes {
-                durationMillis = DurationMs
-                18f at 1650 using FastOutSlowInEasing
-                NeedleRestAngle at 2250 using FastOutSlowInEasing
+                durationMillis = SplashMs
+                NeedleOvershoot at SplashMs * OvershootAtPercent / 100 using FastOutSlowInEasing
+                NeedleRestAngle at SplashMs * RestAtPercent / 100 using FastOutSlowInEasing
             },
         )
     }
@@ -127,17 +136,32 @@ private fun Splash() {
     }
 }
 
+/**
+ * Shows the boot animation until the home screen has something to draw.
+ *
+ * It leaves as soon as [ready] and the logo animation are both done, so a fast
+ * device is not held for a fixed delay, and gives up at [MaxSplashMs] so a slow
+ * or failing app scan cannot trap the user on the splash.
+ */
 @Composable
-fun SplashGate(content: @Composable (ready: Boolean) -> Unit) {
+fun SplashGate(ready: Boolean, content: @Composable (ready: Boolean) -> Unit) {
     var showing by rememberSaveable { mutableStateOf(true) }
+    val opened = remember { SystemClock.elapsedRealtime() }
     val scale by animateFloatAsState(
         targetValue = if (showing) EnterScale else 1f,
         animationSpec = tween(EnterDurationMs),
         label = "scale",
     )
 
+    LaunchedEffect(ready) {
+        if (!ready) return@LaunchedEffect
+        val elapsed = SystemClock.elapsedRealtime() - opened
+        delay((SplashMs - elapsed).coerceAtLeast(0L))
+        showing = false
+    }
+
     LaunchedEffect(Unit) {
-        delay(DurationMs.toLong())
+        delay(MaxSplashMs)
         showing = false
     }
 

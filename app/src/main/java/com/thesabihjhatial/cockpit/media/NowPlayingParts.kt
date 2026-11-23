@@ -1,25 +1,24 @@
 package com.thesabihjhatial.cockpit.media
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
@@ -29,6 +28,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,7 +38,9 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.Icon
 import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.Text
 import kotlinx.coroutines.delay
 
 private val ArtShape = RoundedCornerShape(20.dp)
@@ -129,14 +131,22 @@ internal fun Progress(fraction: Float, modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Ticks the playback position for display. The value is interpolated from the
+ * session's last reported position, so this only has to re-read it often enough
+ * to keep the progress bar smooth.
+ */
 @Composable
-internal fun rememberPosition(nowPlaying: NowPlaying): State<Long> =
-    produceState(nowPlaying.currentPosition(), nowPlaying) {
+internal fun rememberPosition(nowPlaying: NowPlaying): State<Long> {
+    val position = remember(nowPlaying) { mutableStateOf(nowPlaying.currentPosition()) }
+    LaunchedEffect(nowPlaying) {
         while (true) {
-            value = nowPlaying.currentPosition()
             delay(PositionTickMs)
+            position.value = nowPlaying.currentPosition()
         }
     }
+    return position
+}
 
 @Composable
 internal fun TrackHeading(nowPlaying: NowPlaying, gap: Dp, modifier: Modifier = Modifier) {

@@ -1,9 +1,9 @@
 package com.thesabihjhatial.cockpit.pins
 
 import android.content.Context
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 const val PinSlots = 4
 
@@ -21,6 +21,9 @@ internal fun List<String?>.withoutId(id: String): List<String?> =
 
 internal fun List<String?>.withoutSlot(slot: Int): List<String?> =
     mapIndexed { index, pinned -> if (index == slot) null else pinned }
+
+internal fun List<String?>.withoutUnknown(validIds: Set<String>): List<String?> =
+    map { pinned -> pinned?.takeIf { it in validIds } }
 
 internal fun List<String?>.withPinned(id: String, slot: Int): List<String?> =
     mapIndexed { index, pinned -> if (index == slot) id else pinned.takeIf { it != id } }
@@ -40,11 +43,14 @@ class PinnedStore(context: Context) {
         return List(PinSlots) { saved.getOrNull(it)?.takeIf(String::isNotEmpty) }
     }
 
+    fun reconcile(validIds: Set<String>) = write(state.value.withoutUnknown(validIds))
+
     fun undock(id: String) = write(state.value.withoutId(id))
 
     fun unpin(slot: Int) = write(state.value.withoutSlot(slot))
 
     private fun write(slots: List<String?>) {
+        if (slots == state.value) return
         state.value = slots
         preferences.edit().putString(SlotsKey, slots.joinToString(Separator) { it.orEmpty() }).apply()
     }

@@ -29,6 +29,8 @@
     <string name="media_play">Play</string>
     <string name="media_previous">Previous track</string>
     <string name="media_unknown_track">Unknown track</string>
+    <string name="mode_bt_music">BT Music</string>
+    <string name="mode_radio">Radio</string>
     <string name="settings_title">Settings</string>
     <string name="splash_status">Starting up</string>
     <string name="status_connected">Connected</string>

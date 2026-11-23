@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- FINE and COARSE must be requested together from Android 12, otherwise the
+         request is ignored. Only FINE is used: the SSID is redacted without it. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -9,7 +13,15 @@
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- A launcher must enumerate every installed app and resolve vendor actions, which
+         package visibility filters would hide. This is deliberate, not an oversight. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="cn.yunovo.config.permission.YUNOVO_READ" />
+    <uses-permission android:name="com.yunovo.permission.BLUETOOTH_STATE_OBSERVER" />
+    <uses-permission android:name="com.yunovo.permission.READ_BLUETOOTH_STATE" />
 
     <queries>
         <intent>

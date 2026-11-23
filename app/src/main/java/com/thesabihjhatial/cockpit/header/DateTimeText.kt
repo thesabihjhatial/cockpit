@@ -1,13 +1,13 @@
 package com.thesabihjhatial.cockpit.header
 
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
 import com.thesabihjhatial.cockpit.ui.CockpitColors
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 import java.util.Locale
 
 private val DateFormatter = DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH)

@@ -1,14 +1,12 @@
 package com.thesabihjhatial.cockpit.ui
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 
 private const val NightEndHour = 6
@@ -68,23 +66,25 @@ fun isDark(hour: Int, headlights: Boolean): Boolean = headlights || isNight(hour
 
 fun isNight(hour: Int): Boolean = hour >= NightStartHour || hour < NightEndHour
 
+/**
+ * Provides the locals the UI reads: palette, default text style and press feedback.
+ *
+ * There is deliberately no MaterialTheme here: the app draws its own text, icons,
+ * spinner, menu and press tint, so material3 is dead weight in the dex.
+ */
 @Composable
 fun CockpitTheme(night: Boolean, content: @Composable () -> Unit) {
     val colors = cockpitColors(night)
-    val scheme = (if (night) darkColorScheme() else lightColorScheme()).copy(
-        background = colors.background,
-        onBackground = colors.text,
-        onSurface = colors.text,
-        surface = colors.surface,
-        surfaceContainer = colors.surface,
+    CompositionLocalProvider(
+        LocalCockpitColors provides colors,
+        LocalIndication provides PressIndication,
+        LocalTextStyle provides TextStyle.Default.merge(
+            SpanStyle(
+                color = colors.text,
+                fontFamily = InterFamily,
+                fontFeatureSettings = "tnum, cv11",
+            ),
+        ),
+        content = content,
     )
-
-    CompositionLocalProvider(LocalCockpitColors provides colors) {
-        MaterialTheme(colorScheme = scheme) {
-            ProvideTextStyle(
-                value = TextStyle(color = colors.text, fontFamily = InterFamily, fontFeatureSettings = "tnum, cv11"),
-                content = content,
-            )
-        }
-    }
 }
