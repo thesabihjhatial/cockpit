@@ -9,9 +9,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 
-private const val NightEndHour = 6
-private const val NightStartHour = 18
-
+/**
+ * The launcher's palette. There is exactly one: a head unit lives in a dark cabin, and a
+ * light theme cost a second palette, a cross-fade and a brightness heuristic to choose
+ * between them, for no benefit.
+ */
 @Immutable
 data class CockpitColors(
     val accent: Color,
@@ -28,24 +30,7 @@ data class CockpitColors(
     val track: Color,
 )
 
-val DayColors = CockpitColors(
-    accent = Color(0xFFD92D20),
-    accentInk = Color(0xFFB42318),
-    accentSoft = Color(0x2BD92D20),
-    background = Color(0xFFF5F5F6),
-    line = Color(0xFFD4D4D8),
-    muted = Color(0xFF5E5E66),
-    raised = Color(0xFFEFEFF1),
-    ring = Color(0xFFE4E4E7),
-    surface = Color(0xFFFFFFFF),
-    text = Color(0xFF18181B),
-    text2 = Color(0xFF3F3F46),
-    track = Color(0xFFE2E2E6),
-)
-
-val LocalCockpitColors = compositionLocalOf { DayColors }
-
-val NightColors = CockpitColors(
+val CockpitPalette = CockpitColors(
     accent = Color(0xFFE5484D),
     accentInk = Color(0xFFFF9592),
     accentSoft = Color(0x33E5484D),
@@ -60,27 +45,22 @@ val NightColors = CockpitColors(
     track = Color(0xFF2A2A2D),
 )
 
-fun cockpitColors(night: Boolean): CockpitColors = if (night) NightColors else DayColors
-
-fun isDark(hour: Int, headlights: Boolean): Boolean = headlights || isNight(hour)
-
-fun isNight(hour: Int): Boolean = hour >= NightStartHour || hour < NightEndHour
+val LocalCockpitColors = compositionLocalOf { CockpitPalette }
 
 /**
  * Provides the locals the UI reads: palette, default text style and press feedback.
  *
- * There is deliberately no MaterialTheme here: the app draws its own text, icons,
- * spinner, menu and press tint, so material3 is dead weight in the dex.
+ * No MaterialTheme and no palette switching — the app draws its own widgets and the
+ * palette is a constant.
  */
 @Composable
-fun CockpitTheme(night: Boolean, content: @Composable () -> Unit) {
-    val colors = cockpitColors(night)
+fun CockpitTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(
-        LocalCockpitColors provides colors,
+        LocalCockpitColors provides CockpitPalette,
         LocalIndication provides PressIndication,
         LocalTextStyle provides TextStyle.Default.merge(
             SpanStyle(
-                color = colors.text,
+                color = CockpitPalette.text,
                 fontFamily = InterFamily,
                 fontFeatureSettings = "tnum, cv11",
             ),

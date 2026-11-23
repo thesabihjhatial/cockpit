@@ -41,7 +41,6 @@ app/src/main/
     apps/                      app enumeration, tiles, drawer sheet, dock launching
     bluetooth/                 connection + device name resolution
     clock/                     ticking time state
-    display/                   headlight / night detection from brightness
     header/                    greeting, time, date, status chips, expanded clock
     home/                      HomeScreen (all wiring) + HomeViewModel (apps & pins)
     media/                     now-playing pipeline, controls, visualizer
@@ -66,13 +65,9 @@ test.html                      standalone 1280x720 browser mock of the same UI
 ```
 onCreate
   enableEdgeToEdge() + hideSystemBars()        immersive; re-hidden on every focus gain
-  paintWindow(isNight(LocalTime.now().hour))   avoids a white flash before first frame
+  paintWindow()                               dark background before the first frame
   setContent {
-    rememberNow()                              ticking LocalDateTime
-    rememberHeadlightsOn()                     dim screen == headlights on
-    ThemeFade(night) {                         crossfades palettes through a background veil
-      SideEffect { paintWindow(night) }        keeps the window background in sync
-      CockpitTheme(night) {
+    CockpitTheme {                            palette, text style and press tint
         DesignScale {                          overrides LocalDensity -> height / 720
           SplashGate(ready) { settled ->        boot animation; leaves when the scan is ready
             HomeScreen(settled, viewModel)      everything else happens here
@@ -109,7 +104,6 @@ broadcasts, content observers and listeners. Lifecycle-aware collection via
 |---|---|---|
 | Ticking clock | `rememberNow()` | `clock/Now.kt` |
 | Time/timezone changes | `timeChangeFlow()` | `clock/TimeChangeFlow.kt` |
-| Night mode | `rememberHeadlightsOn()` | `display/Headlights.kt` |
 | Bluetooth | `rememberBluetoothStatus()` | `bluetooth/BluetoothStatusState.kt` |
 | Wi-Fi | `rememberWifiStatus()` | `network/WifiState.kt` |
 | Now playing | `rememberMediaState()` | `media/MediaState.kt` |
@@ -124,8 +118,8 @@ or timezone changes, so the displayed time can never drift.
 
 ### 2. Pure logic — no Android dependencies, unit-tested
 
-Top-level functions with no framework types: `isNight()` / `isDark()`, `greetingLabel()`,
-`dateText()` / `timeText()`, `isDim()`, `formatTime()`, the pin-slot algebra
+Top-level functions with no framework types: `greetingLabel()`, `dateText()` / `timeText()`,
+`formatTime()`, the pin-slot algebra
 (`withFirstFree`, `withPinned`, `withoutId`, `withoutSlot`), `glyphCoverage()`, `levels()`
 (FFT bins → bars), and `SheetState`'s drag / fling / snap state machine.
 
@@ -287,13 +281,9 @@ in `runCatching`, and the reflection is guarded.
 
 - Wi-Fi: `ConnectivityManager` network callback for a `TRANSPORT_WIFI` network; the SSID is
   read from `WifiManager.connectionInfo` and therefore needs fine-location permission.
-- Night mode: the theme is dark when the hour is outside 06:00–18:00 **or** the system screen
-  brightness is below 50 % of maximum. On a head unit, a dimmed screen means the driver has
-  turned the lights on, so brightness is the only headlight signal available without CAN bus
-  access. The threshold and the hour boundaries are covered by tests.
-- Theme transitions do not animate a colour cross-fade (expensive and flickery). Instead
-  `ThemeFade` fades a solid background veil in over 62 ms, swaps the palette behind it, and
-  fades out over 63 ms.
+- There is exactly one palette. Light mode was removed along with the second palette, the
+  cross-fade and the brightness heuristic that chose between them: a head unit is a dark
+  cabin, and `paintWindow()` and the window background now share the same constant.
 
 ### Permissions and settings
 
@@ -308,11 +298,10 @@ tap-initiated request that escalates to app settings if the result comes back de
 ## Design system
 
 One `@Immutable data class CockpitColors` with 12 named roles (accent, accentInk,
-accentSoft, background, line, muted, raised, ring, surface, text, text2, track) and two
-hand-tuned palettes: light zinc with a `#D92D20` red accent, and near-black `#0F0F10` with
-`#E5484D`. Provided through `LocalCockpitColors`; `MaterialTheme` receives a matched colour
-scheme so stock components (dialogs, menus, progress) inherit the same look. Nothing in the
-app hard-codes a colour except pure white on accent controls and tile icons.
+accentSoft, background, line, muted, raised, ring, surface, text, text2, track) and exactly
+one palette: near-black `#0F0F10` surfaces with a `#E5484D` accent. It is a `val` provided
+through `LocalCockpitColors`, so nothing can switch it at runtime. Nothing in the app
+hard-codes a colour except pure white on accent controls and tile icons.
 
 Typography: one variable font, Inter, registered at five weights with
 `FontVariation.Settings` so weight is interpolated rather than synthesised, and with
@@ -337,7 +326,6 @@ Motion tokens (all in one place, `ui/FadeThrough.kt` unless noted):
 | `FadeInMs` | 88 ms | incoming screen |
 | `FadeInDelayMs` | 37 ms | incoming screen (sequential, not overlapping) |
 | `InitialScale` | 0.94 | incoming screen scale-in |
-| theme veil | 62 ms in / 63 ms out | `ThemeFade` |
 | sheet | 125 ms `FastOutSlowInEasing` | `SheetState`, splash enter/exit |
 | position tick | 500 ms | progress bar |
 | launch timeout | 10 s | spinner on a tapped tile |
@@ -387,10 +375,8 @@ subtly wrong:
 
 | File | What it pins down |
 |---|---|
-| `ui/NightModeTest` | day is 06:00–18:00; headlights force dark; night stays dark |
 | `header/GreetingTest` | greeting bucket boundaries (5/12/17/24) |
 | `header/DateTimeTextTest` | `h:mm` without padding, 12-hour clock, `Thursday, 5 November` |
-| `display/HeadlightsTest` | dim threshold at 127/128 of 255 |
 | `pins/PinnedStoreTest` | slot algebra: fill first free, move, replace, no-op cases |
 | `apps/SheetStateTest` | fling up/down, snap at 50 %, drag consumption (fake frame clock) |
 | `apps/IconGlyphTest` | opaque-coverage ratio used for the monochrome-glyph decision |

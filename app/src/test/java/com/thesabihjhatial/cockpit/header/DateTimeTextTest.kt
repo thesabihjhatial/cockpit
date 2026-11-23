@@ -1,6 +1,6 @@
 package com.thesabihjhatial.cockpit.header
 
-import com.thesabihjhatial.cockpit.ui.DayColors
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import java.time.LocalDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -9,7 +9,7 @@ class DateTimeTextTest {
 
     @Test
     fun dateShowsWeekdayThenDayAndMonthWithoutPadding() {
-        assertEquals("Thursday, 5 November", LocalDateTime.of(2026, 11, 5, 9, 0).dateText(DayColors).text)
+        assertEquals("Thursday, 5 November", LocalDateTime.of(2026, 11, 5, 9, 0).dateText(CockpitPalette).text)
     }
 
     @Test
