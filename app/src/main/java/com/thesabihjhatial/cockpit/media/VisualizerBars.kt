@@ -32,8 +32,8 @@ private const val Brightness = 0.98f
 
 private const val GreenHue = 120f
 
-private const val BlendFrom = 1f / 3f
-private const val BlendTo = 2f / 3f
+private const val BlendFrom = 0.25f
+private const val BlendTo = 0.5f
 
 private fun rowColor(row: Int): Color {
     val height = row / (Rows - 1).toFloat()
