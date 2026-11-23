@@ -46,10 +46,8 @@ import com.thesabihjhatial.cockpit.ui.Text
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** How long the logo animation runs; also the shortest time the splash stays up. */
 private const val SplashMs = 1200
 
-/** Ceiling for a slow first app scan, so the launcher can always appear. */
 private const val MaxSplashMs = 3000L
 
 private const val EnterDurationMs = 125
@@ -136,13 +134,6 @@ private fun Splash() {
     }
 }
 
-/**
- * Shows the boot animation until the home screen has something to draw.
- *
- * It leaves as soon as [ready] and the logo animation are both done, so a fast
- * device is not held for a fixed delay, and gives up at [MaxSplashMs] so a slow
- * or failing app scan cannot trap the user on the splash.
- */
 @Composable
 fun SplashGate(ready: Boolean, content: @Composable (ready: Boolean) -> Unit) {
     var showing by rememberSaveable { mutableStateOf(true) }

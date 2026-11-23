@@ -28,10 +28,8 @@ fun Header(
     wifi: WifiStatus,
     launching: String?,
     onBluetooth: () -> Unit,
-    onClock: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    timeModifier: Modifier = Modifier,
 ) {
     val now by clock
 
@@ -50,7 +48,7 @@ fun Header(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TimeDate(now = now, onClick = onClock, modifier = Modifier.weight(1f), timeModifier = timeModifier)
+            TimeDate(now = now, modifier = Modifier.weight(1f))
             StatusRow(
                 bluetoothAccess = bluetoothAccess,
                 bluetoothStatus = bluetoothStatus,

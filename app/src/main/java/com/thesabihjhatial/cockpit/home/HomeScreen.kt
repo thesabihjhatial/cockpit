@@ -8,7 +8,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.Orientation
@@ -29,8 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -44,7 +41,6 @@ import com.thesabihjhatial.cockpit.apps.launchApp
 import com.thesabihjhatial.cockpit.apps.SheetState
 import com.thesabihjhatial.cockpit.bluetooth.rememberBluetoothStatus
 import com.thesabihjhatial.cockpit.clock.rememberNow
-import com.thesabihjhatial.cockpit.header.ExpandedClock
 import com.thesabihjhatial.cockpit.header.Header
 import com.thesabihjhatial.cockpit.media.ExpandedNowPlaying
 import com.thesabihjhatial.cockpit.media.NowPlayingPanel
@@ -67,9 +63,8 @@ import kotlinx.coroutines.delay
 
 private const val ArtKey = "art"
 private const val LaunchTimeoutMs = 10000L
-private const val TimeKey = "time"
 
-private enum class Screen { Clock, Home, NowPlaying }
+private enum class Screen { Home, NowPlaying }
 
 private val FlingVelocity = 500.dp
 private val RowGap = 16.dp
@@ -97,30 +92,22 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
     val slots by viewModel.slots.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    var clockOpen by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var launching by remember { mutableStateOf<String?>(null) }
     var picking by remember { mutableStateOf<Int?>(null) }
     val sheet = remember { SheetState(scope) { picking = null } }
     val dragState = rememberDraggableState { sheet.dragBy(it) }
     val showExpanded = expanded && nowPlaying != null
-    val screen = when {
-        showExpanded -> Screen.NowPlaying
-        clockOpen -> Screen.Clock
-        else -> Screen.Home
-    }
+    val screen = if (showExpanded) Screen.NowPlaying else Screen.Home
     val spectrumAllowed = rememberSpectrumAccess(showExpanded)
 
     BackHandler(enabled = sheet.isVisible) { sheet.close() }
-
-    BackHandler(enabled = clockOpen) { clockOpen = false }
 
     BackHandler(enabled = showExpanded) { expanded = false }
 
     LaunchedEffect(Unit) {
         viewModel.homeRequests.collect {
             sheet.close()
-            clockOpen = false
             expanded = false
         }
     }
@@ -174,35 +161,15 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                     )
                     .padding(ScreenPadding),
                 transitionSpec = { FadeThrough },
-                label = "nowPlaying",
+                label = "screens",
             ) { target ->
                 val artModifier = Modifier.sharedElement(
                     state = rememberSharedContentState(key = ArtKey),
                     animatedVisibilityScope = this@AnimatedContent,
                     boundsTransform = { _, _ -> tween(FadeInMs, FadeInDelayMs, FastOutSlowInEasing) },
                 )
-                val timeModifier = Modifier.sharedBounds(
-                    sharedContentState = rememberSharedContentState(key = TimeKey),
-                    animatedVisibilityScope = this@AnimatedContent,
-                    boundsTransform = { _, _ -> tween(FadeInMs, FadeInDelayMs, FastOutSlowInEasing) },
-                    resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds(ContentScale.FillWidth, Alignment.CenterStart),
-                )
                 Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RowGap)) {
-                    if (target == Screen.Clock) {
-                        ExpandedClock(
-                            clock = clock,
-                            bluetoothAccess = bluetoothAccess,
-                            bluetoothStatus = bluetoothStatus,
-                            wifi = wifi,
-                            launching = launching,
-                            onBluetooth = { open(BluetoothAccessId) { bluetoothAccess.request(); true } },
-                            onCollapse = { clockOpen = false },
-                            onSettings = { open(SettingsId) { context.openSystemSettings() } },
-                            rowGap = RowGap,
-                            rowHeight = rowHeight,
-                            timeModifier = timeModifier,
-                        )
-                    } else if (target == Screen.NowPlaying && nowPlaying != null) {
+                    if (target == Screen.NowPlaying && nowPlaying != null) {
                         ExpandedNowPlaying(
                             nowPlaying = nowPlaying,
                             rowGap = RowGap,
@@ -211,7 +178,7 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                             onCollapse = { expanded = false },
                             artModifier = artModifier,
                         )
-                    } else if (target == Screen.Home) {
+                    } else {
                         Header(
                             clock = clock,
                             bluetoothAccess = bluetoothAccess,
@@ -219,10 +186,8 @@ fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
                             wifi = wifi,
                             launching = launching,
                             onBluetooth = { open(BluetoothAccessId) { bluetoothAccess.request(); true } },
-                            onClock = { clockOpen = true },
                             onSettings = { open(SettingsId) { context.openSystemSettings() } },
                             modifier = Modifier.fillMaxWidth().height(rowHeight),
-                            timeModifier = timeModifier,
                         )
                         NowPlayingPanel(
                             media = media,

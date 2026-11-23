@@ -131,11 +131,6 @@ internal fun Progress(fraction: Float, modifier: Modifier = Modifier) {
     )
 }
 
-/**
- * Ticks the playback position for display. The value is interpolated from the
- * session's last reported position, so this only has to re-read it often enough
- * to keep the progress bar smooth.
- */
 @Composable
 internal fun rememberPosition(nowPlaying: NowPlaying): State<Long> {
     val position = remember(nowPlaying) { mutableStateOf(nowPlaying.currentPosition()) }

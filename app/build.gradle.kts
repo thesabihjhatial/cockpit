@@ -6,9 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Release signing is read from keystore.properties (gitignored). Without it the
-// release build falls back to the debug key so the build never breaks, but such
-// a build cannot update an installed copy in place.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
@@ -52,7 +49,6 @@ android {
         compose = true
     }
 
-    // Nothing here uses reflection over Kotlin metadata or debugging probes.
     packaging {
         resources {
             excludes += listOf(
@@ -63,14 +59,11 @@ android {
                 "kotlin-tooling-metadata.json",
             )
         }
-        // Compose ships this native path library for animated vector work, which the
-        // launcher never does; dropping it saves ~37 KB across four ABIs.
         jniLibs {
             excludes += "**/libandroidx.graphics.path.so"
         }
     }
 
-    // The dependency list AGP embeds in the APK signing block is of no use here.
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -93,7 +86,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.palette)
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)

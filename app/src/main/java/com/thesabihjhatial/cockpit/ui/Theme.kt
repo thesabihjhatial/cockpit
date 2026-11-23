@@ -9,11 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 
-/**
- * The launcher's palette. There is exactly one: a head unit lives in a dark cabin, and a
- * light theme cost a second palette, a cross-fade and a brightness heuristic to choose
- * between them, for no benefit.
- */
 @Immutable
 data class CockpitColors(
     val accent: Color,
@@ -28,6 +23,8 @@ data class CockpitColors(
     val text: Color,
     val text2: Color,
     val track: Color,
+    val tileBackground: Color,
+    val tileInk: Color,
 )
 
 val CockpitPalette = CockpitColors(
@@ -43,16 +40,12 @@ val CockpitPalette = CockpitColors(
     text = Color(0xFFF2F2F3),
     text2 = Color(0xFFC7C7CC),
     track = Color(0xFF2A2A2D),
+    tileBackground = Color(0xFFFFFFFF),
+    tileInk = Color(0xFF121214),
 )
 
 val LocalCockpitColors = compositionLocalOf { CockpitPalette }
 
-/**
- * Provides the locals the UI reads: palette, default text style and press feedback.
- *
- * No MaterialTheme and no palette switching — the app draws its own widgets and the
- * palette is a constant.
- */
 @Composable
 fun CockpitTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(

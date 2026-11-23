@@ -22,11 +22,6 @@ import androidx.compose.ui.window.PopupProperties
 
 private val MenuShape = RoundedCornerShape(14.dp)
 
-/**
- * A small anchored popup menu, matching material3's DropdownMenu signature so call
- * sites are unchanged. Popup's alignment is relative to the calling layout, so this
- * still opens at the tile that asked for it.
- */
 @Composable
 fun DropdownMenu(
     expanded: Boolean,
@@ -54,7 +49,6 @@ fun DropdownMenu(
     }
 }
 
-/** One row of a [DropdownMenu]. */
 @Composable
 fun DropdownMenuItem(
     text: @Composable () -> Unit,

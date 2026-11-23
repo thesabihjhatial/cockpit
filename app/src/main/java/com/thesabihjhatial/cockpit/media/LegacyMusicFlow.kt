@@ -13,10 +13,6 @@ import kotlinx.coroutines.flow.Flow
 private const val ActionMetaChanged = "com.android.music.metachanged"
 private const val ActionPlayStateChanged = "com.android.music.playstatechanged"
 
-// Vendor players put durations and positions in these extras as whatever type they
-// like: Long, Integer, sometimes String. Bundle.get is deprecated because it erases
-// type, which is exactly what is needed here; the typed accessors would silently
-// return their default on a mismatch and lose the value.
 @Suppress("DEPRECATION")
 private fun Intent.number(key: String): Long = (extras?.get(key) as? Number)?.toLong() ?: 0L
 

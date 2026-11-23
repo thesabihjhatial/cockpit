@@ -17,16 +17,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 
-/** The theme's default text style. Stands in for material3's LocalTextStyle. */
 val LocalTextStyle = compositionLocalOf {
     TextStyle.Default.merge(SpanStyle(fontFamily = InterFamily, fontFeatureSettings = "tnum, cv11"))
 }
 
-/**
- * Resolves the style the way material3's Text does: an explicit colour wins, then the
- * colour carried by the passed style, then the theme's text colour. That ordering is
- * what keeps the clock — whose style carries its own colour — legible at night.
- */
 @Composable
 private fun resolvedStyle(
     color: Color,
@@ -66,7 +60,6 @@ private fun resolvedStyle(
         )
 }
 
-/** Text, with material3's parameter list so call sites are unchanged. */
 @Composable
 fun Text(
     text: String,
@@ -106,7 +99,6 @@ fun Text(
     )
 }
 
-/** Spanned text, which the date line needs for its two-tone weekday. */
 @Composable
 fun Text(
     text: AnnotatedString,

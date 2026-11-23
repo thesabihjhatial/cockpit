@@ -21,10 +21,6 @@ import androidx.compose.ui.unit.Dp
 private const val SpinMs = 900
 private const val SweepDegrees = 90f
 
-/**
- * A rotating arc, with material3's CircularProgressIndicator parameter list so call
- * sites are unchanged. Two arcs on one canvas cost far less than the material version.
- */
 @Composable
 fun CircularProgressIndicator(
     modifier: Modifier = Modifier,

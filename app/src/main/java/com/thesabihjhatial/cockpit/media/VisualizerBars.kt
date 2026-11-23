@@ -25,7 +25,6 @@ private const val MinScale = 0.22f
 private const val NanosPerSecond = 1_000_000_000f
 private const val RiseSeconds = 0.05f
 
-/** Each of the [BarCount] columns is drawn as this many stacked segments. */
 private const val Rows = 21
 
 private const val Saturation = 0.85f
@@ -33,11 +32,6 @@ private const val Brightness = 0.98f
 
 private const val GreenHue = 120f
 
-/**
- * Thirds of the height, matching the 21 rows: rows 0-6 are solid green, 14-20 solid red,
- * and 7-13 carry the whole blend. Interpolating hue linearly across that middle third
- * keeps the fade even, with yellow landing on the middle row.
- */
 private const val BlendFrom = 1f / 3f
 private const val BlendTo = 2f / 3f
 
@@ -98,8 +92,6 @@ fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Mod
             (peak(index) * levels[index] * Rows).roundToInt().coerceIn(0, Rows)
         }
 
-        // One path per row, spanning every column lit that high: 21 draw calls, and
-        // every row carries its own hue.
         repeat(Rows) { row ->
             path.reset()
             var painted = false

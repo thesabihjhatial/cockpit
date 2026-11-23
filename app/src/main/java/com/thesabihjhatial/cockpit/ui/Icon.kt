@@ -8,9 +8,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.Modifier
 
-/**
- * A tinted vector icon, with material3's parameter list so call sites are unchanged.
- */
 @Composable
 fun Icon(
     imageVector: ImageVector,

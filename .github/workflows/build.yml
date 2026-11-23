@@ -6,7 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-# A queued run for the same branch is superseded by the newest one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -30,17 +29,12 @@ jobs:
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --console=plain
 
-      # Lint is a gate, not advice: it has caught API-level and permission
-      # mistakes that lintVital (which runs inside the release build) does not.
       - name: Lint
         run: ./gradlew lint --console=plain
 
       - name: Release build
         run: ./gradlew assembleRelease --console=plain
 
-      # Without keystore.properties the release is debug-signed, which is fine for
-      # QA but cannot replace an installed copy. Add the keystore as secrets when
-      # you want CI to produce an installable artifact.
       - uses: actions/upload-artifact@v4
         with:
           name: cockpit-release

@@ -1,15 +1,15 @@
 package com.thesabihjhatial.cockpit.apps
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,10 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -34,24 +32,29 @@ import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.ui.CircularProgressIndicator
 import com.thesabihjhatial.cockpit.ui.DropdownMenu
 import com.thesabihjhatial.cockpit.ui.DropdownMenuItem
+import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 
-private val BadgeColor = Color.White.copy(alpha = 0.22f)
 private val TileShape = RoundedCornerShape(16.dp)
+private const val BadgeAlpha = 0.08f
+private const val TrackAlpha = 0.12f
+private const val BadgeTextAlpha = 0.72f
 
 class TileAction(val label: String, val onSelect: () -> Unit, val enabled: Boolean = true)
 
 @Composable
 private fun Badge(text: String, modifier: Modifier = Modifier) {
+    val ink = LocalCockpitColors.current.tileInk
+
     Box(
         modifier = modifier
             .height(22.dp)
             .clip(CircleShape)
-            .background(BadgeColor)
+            .background(ink.copy(alpha = BadgeAlpha))
             .padding(horizontal = 9.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = text, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = text, color = ink.copy(alpha = BadgeTextAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -66,9 +69,9 @@ fun AppTile(
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {
+    val colors = LocalCockpitColors.current
+    val icon = rememberAppIcon(app)
     var menuOpen by remember { mutableStateOf(false) }
-    // Long press is the only way into this menu, which gloves and TalkBack cannot do,
-    // so the same actions are also published as accessibility actions.
     val accessibilityActions = actions
         .filter { it.enabled }
         .map { action -> CustomAccessibilityAction(action.label) { action.onSelect(); true } }
@@ -78,7 +81,7 @@ fun AppTile(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(TileShape)
-                .background(app.color)
+                .background(colors.tileBackground)
                 .combinedClickable(
                     enabled = enabled && !loading,
                     onClick = onClick,
@@ -92,26 +95,25 @@ fun AppTile(
                 horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (loading) {
-                    Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                when {
+                    loading -> Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(40.dp),
-                            color = Color.White,
+                            color = colors.tileInk,
                             strokeWidth = 4.dp,
-                            trackColor = Color.White.copy(alpha = 0.25f),
+                            trackColor = colors.tileInk.copy(alpha = TrackAlpha),
                         )
                     }
-                } else {
-                    Image(
-                        bitmap = app.icon,
+                    icon == null -> Box(modifier = Modifier.size(TileIconDp.dp))
+                    else -> Image(
+                        bitmap = icon,
                         contentDescription = null,
-                        modifier = Modifier.size(56.dp),
-                        colorFilter = if (app.tinted) ColorFilter.tint(Color.White) else null,
+                        modifier = Modifier.size(TileIconDp.dp),
                     )
                 }
                 Text(
                     text = app.label,
-                    color = Color.White,
+                    color = colors.tileInk,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.03).em,
