@@ -1,6 +1,5 @@
 package com.thesabihjhatial.cockpit.media
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,7 @@ import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
 import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Icon
+import com.thesabihjhatial.cockpit.ui.silentClickable
 import com.thesabihjhatial.cockpit.ui.Text
 
 @Composable
@@ -45,7 +45,7 @@ fun ColumnScope.ExpandedNowPlaying(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
-            .clickable(onClickLabel = collapseLabel, onClick = onCollapse),
+            .silentClickable(onClickLabel = collapseLabel, onClick = onCollapse),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -72,7 +72,7 @@ fun ColumnScope.ExpandedNowPlaying(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight * 2 + rowGap)
-            .clickable(onClickLabel = collapseLabel, onClick = onCollapse),
+            .silentClickable(onClickLabel = collapseLabel, onClick = onCollapse),
     )
     Column(
         modifier = Modifier.fillMaxWidth().height(rowHeight),

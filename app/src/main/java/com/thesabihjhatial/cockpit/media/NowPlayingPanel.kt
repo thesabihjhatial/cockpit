@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitPalette
+import com.thesabihjhatial.cockpit.ui.silentClickable
 import com.thesabihjhatial.cockpit.ui.Text
 
 private val ColumnGap = 16.dp
@@ -115,7 +116,7 @@ fun NowPlayingPanel(
                 Row(
                     modifier = Modifier
                         .width(artSize * 3 + ColumnGap * 2)
-                        .clickable(onClickLabel = stringResource(R.string.media_expand), onClick = onExpand),
+                        .silentClickable(onClickLabel = stringResource(R.string.media_expand), onClick = onExpand),
                     horizontalArrangement = Arrangement.spacedBy(ColumnGap),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
