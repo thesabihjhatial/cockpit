@@ -30,21 +30,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.ui.CircularProgressIndicator
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.DropdownMenu
 import com.thesabihjhatial.cockpit.ui.DropdownMenuItem
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 
-private val TileShape = RoundedCornerShape(16.dp)
+internal val TileShape = RoundedCornerShape(16.dp)
 private const val BadgeAlpha = 0.08f
-private const val TrackAlpha = 0.12f
 private const val BadgeTextAlpha = 0.72f
+private const val TrackAlpha = 0.12f
 
 class TileAction(val label: String, val onSelect: () -> Unit, val enabled: Boolean = true)
 
 @Composable
 private fun Badge(text: String, modifier: Modifier = Modifier) {
-    val ink = LocalCockpitColors.current.tileInk
+    val ink = CockpitPalette.tileInk
 
     Box(
         modifier = modifier
@@ -69,7 +69,7 @@ fun AppTile(
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val icon = rememberAppIcon(app)
     var menuOpen by remember { mutableStateOf(false) }
     val accessibilityActions = actions
@@ -96,7 +96,7 @@ fun AppTile(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 when {
-                    loading -> Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                    loading -> Box(modifier = Modifier.size(TileIconDp.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(40.dp),
                             color = colors.tileInk,

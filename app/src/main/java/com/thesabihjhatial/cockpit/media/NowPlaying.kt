@@ -8,18 +8,18 @@ import android.view.KeyEvent
 import androidx.compose.ui.graphics.ImageBitmap
 
 data class NowPlaying(
-    val art: ImageBitmap?,
-    val artist: String,
-    val controller: MediaController?,
-    val duration: Long,
-    val hasNext: Boolean,
-    val hasPrevious: Boolean,
-    val playing: Boolean,
-    val position: Long,
-    val positionUpdatedAt: Long,
+    val art: ImageBitmap? = null,
+    val artist: String = "",
+    val controller: MediaController? = null,
+    val duration: Long = 0L,
+    val hasNext: Boolean = true,
+    val hasPrevious: Boolean = true,
+    val playing: Boolean = false,
+    val position: Long = 0L,
+    val positionUpdatedAt: Long = 0L,
     val source: String,
-    val speed: Float,
-    val title: String,
+    val speed: Float = 1f,
+    val title: String = "",
 )
 
 private fun Context.sendMediaKey(keyCode: Int) {

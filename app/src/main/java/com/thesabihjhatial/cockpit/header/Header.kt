@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.bluetooth.BluetoothStatus
 import com.thesabihjhatial.cockpit.network.WifiStatus
 import com.thesabihjhatial.cockpit.permission.PermissionAccess
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Text
 import java.time.LocalDateTime
 
@@ -39,7 +39,7 @@ fun Header(
     ) {
         Text(
             text = stringResource(greetingLabel(now.hour)),
-            color = LocalCockpitColors.current.muted,
+            color = CockpitPalette.muted,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
         )

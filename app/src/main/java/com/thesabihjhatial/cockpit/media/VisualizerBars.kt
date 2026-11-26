@@ -19,21 +19,20 @@ import kotlin.math.exp
 import kotlin.math.PI
 import kotlin.math.roundToInt
 
-private const val Center = 10
+private const val BlendFrom = 0.25f
+private const val BlendTo = 0.5f
+private const val Brightness = 0.98f
+private const val Center = BarCount / 2
 private const val FallSeconds = 0.14f
+private const val GreenHue = 120f
 private const val MinScale = 0.22f
 private const val NanosPerSecond = 1_000_000_000f
 private const val RiseSeconds = 0.05f
-
-private const val Rows = 21
-
+private const val Rows = BarCount
 private const val Saturation = 0.85f
-private const val Brightness = 0.98f
 
-private const val GreenHue = 120f
-
-private const val BlendFrom = 0.25f
-private const val BlendTo = 0.5f
+private val Peaks = FloatArray(BarCount) { peak(it) }
+private val RowColors = Array(Rows) { rowColor(it) }
 
 private fun rowColor(row: Int): Color {
     val height = row / (Rows - 1).toFloat()
@@ -57,6 +56,7 @@ private fun wave(index: Int, time: Float): Float {
 @Composable
 fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Modifier = Modifier) {
     val levels = remember { FloatArray(BarCount) }
+    val lit = remember { IntArray(BarCount) }
     val frame = remember { mutableLongStateOf(0L) }
     val clock = remember { floatArrayOf(0f) }
     val path = remember { Path() }
@@ -88,8 +88,8 @@ fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Mod
         val pitch = cell + rowGap
         val corner = CornerRadius(2.dp.toPx())
 
-        val lit = IntArray(BarCount) { index ->
-            (peak(index) * levels[index] * Rows).roundToInt().coerceIn(0, Rows)
+        for (index in 0 until BarCount) {
+            lit[index] = (Peaks[index] * levels[index] * Rows).roundToInt().coerceIn(0, Rows)
         }
 
         repeat(Rows) { row ->
@@ -105,7 +105,7 @@ fun VisualizerBars(playing: Boolean, spectrum: State<FloatArray?>, modifier: Mod
                     painted = true
                 }
             }
-            if (painted) drawPath(path, rowColor(row))
+            if (painted) drawPath(path, RowColors[row])
         }
     }
 }

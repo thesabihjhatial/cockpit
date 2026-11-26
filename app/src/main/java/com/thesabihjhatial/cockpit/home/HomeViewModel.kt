@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.thesabihjhatial.cockpit.apps.AppInfo
 import com.thesabihjhatial.cockpit.apps.AppListCache
+import com.thesabihjhatial.cockpit.apps.invalidateAppIcons
 import com.thesabihjhatial.cockpit.apps.loadApps
 import com.thesabihjhatial.cockpit.apps.packageChangeFlow
 import com.thesabihjhatial.cockpit.pins.PinSlots
@@ -34,19 +35,18 @@ private const val WarmRescanDelayMs = 2500L
 @OptIn(FlowPreview::class)
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val appList = MutableStateFlow(emptyList<AppInfo>())
-    private val loaded = MutableStateFlow(false)
-    private val homeSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private val pinnedStore = PinnedStore(application)
     private val appListCache = AppListCache(application)
+    private val homeSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val loaded = MutableStateFlow(false)
+    private val pinnedStore = PinnedStore(application)
     private val scanLock = Mutex()
 
     val apps: StateFlow<List<AppInfo>> = appList.asStateFlow()
-
-    val ready: StateFlow<Boolean> = loaded.asStateFlow()
     val homeRequests: SharedFlow<Unit> = homeSignal.asSharedFlow()
     val pinned: StateFlow<List<AppInfo?>> = combine(appList, pinnedStore.slots) { apps, slots ->
         slots.map { id -> apps.firstOrNull { it.id == id } ?: apps.firstOrNull { it.id.substringBefore(PackageSeparator) == id } }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, List(PinSlots) { null })
+    val ready: StateFlow<Boolean> = loaded.asStateFlow()
     val slots: StateFlow<List<String?>> = pinnedStore.slots
 
     init {
@@ -57,7 +57,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            packageChangeFlow(application).debounce(PackageDebounceMs).collectLatest { scan() }
+            packageChangeFlow(application).debounce(PackageDebounceMs).collectLatest {
+                invalidateAppIcons()
+                scan()
+            }
         }
 
         viewModelScope.launch {
@@ -70,7 +73,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val apps = loadApps(getApplication())
         appList.value = apps
         appListCache.write(apps)
-        if (apps.isNotEmpty()) pinnedStore.reconcile(apps.validPinIds())
         loaded.value = true
     }
 
@@ -87,5 +89,3 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun unpin(slot: Int) = pinnedStore.unpin(slot)
 }
 
-private fun List<AppInfo>.validPinIds(): Set<String> =
-    flatMap { listOf(it.id, it.id.substringBefore(PackageSeparator)) }.toSet()

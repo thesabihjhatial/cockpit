@@ -18,7 +18,7 @@ object PressIndication : Indication {
     @Composable
     override fun rememberUpdatedInstance(interactionSource: InteractionSource): IndicationInstance {
         val pressed by interactionSource.collectIsPressedAsState()
-        val tint = LocalCockpitColors.current.text
+        val tint = CockpitPalette.text
         return remember(pressed, tint) { PressInstance(pressed, tint) }
     }
 }

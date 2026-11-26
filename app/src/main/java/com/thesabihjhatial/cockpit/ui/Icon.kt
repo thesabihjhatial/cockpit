@@ -13,7 +13,7 @@ fun Icon(
     imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    tint: Color = LocalCockpitColors.current.text,
+    tint: Color = CockpitPalette.text,
 ) {
     Image(
         painter = rememberVectorPainter(imageVector),

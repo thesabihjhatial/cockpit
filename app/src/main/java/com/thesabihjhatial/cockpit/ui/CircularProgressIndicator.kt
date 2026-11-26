@@ -24,11 +24,10 @@ private const val SweepDegrees = 90f
 @Composable
 fun CircularProgressIndicator(
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
+    color: Color,
     strokeWidth: Dp = 4.dp,
-    trackColor: Color = Color.Unspecified,
+    trackColor: Color,
 ) {
-    val ink = if (color == Color.Unspecified) LocalCockpitColors.current.text else color
     val transition = rememberInfiniteTransition(label = "spinner")
     val angle by transition.animateFloat(
         initialValue = 0f,
@@ -43,9 +42,7 @@ fun CircularProgressIndicator(
         val arcSize = Size(size.width - stroke, size.height - stroke)
         val topLeft = Offset(inset, inset)
         val cap = Stroke(width = stroke, cap = StrokeCap.Round)
-        if (trackColor != Color.Unspecified) {
-            drawArc(trackColor, 0f, 360f, false, topLeft, arcSize, style = cap)
-        }
-        drawArc(ink, angle - 90f, SweepDegrees, false, topLeft, arcSize, style = cap)
+        drawArc(trackColor, 0f, 360f, false, topLeft, arcSize, style = cap)
+        drawArc(color, angle - 90f, SweepDegrees, false, topLeft, arcSize, style = cap)
     }
 }

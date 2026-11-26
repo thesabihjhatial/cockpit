@@ -54,25 +54,30 @@ fun rememberSpectrum(enabled: Boolean): State<FloatArray?> {
 
 private fun startVisualizer(onLevels: (FloatArray?) -> Unit): Visualizer {
     val visualizer = Visualizer(0)
-    val range = Visualizer.getCaptureSizeRange()
-    visualizer.captureSize = CaptureSize.coerceIn(range[0], range[1])
-    var previous = FloatArray(BarCount)
-    var lastSignal = SystemClock.elapsedRealtime()
-    visualizer.setDataCaptureListener(
-        object : Visualizer.OnDataCaptureListener {
-            override fun onFftDataCapture(visualizer: Visualizer, fft: ByteArray, samplingRate: Int) {
-                previous = levels(fft, previous)
-                val now = SystemClock.elapsedRealtime()
-                if (previous.any { it > SignalFloor }) lastSignal = now
-                onLevels(if (now - lastSignal > SilenceMs) null else previous)
-            }
+    try {
+        val range = Visualizer.getCaptureSizeRange()
+        visualizer.captureSize = CaptureSize.coerceIn(range[0], range[1])
+        var previous = FloatArray(BarCount)
+        var lastSignal = SystemClock.elapsedRealtime()
+        visualizer.setDataCaptureListener(
+            object : Visualizer.OnDataCaptureListener {
+                override fun onFftDataCapture(visualizer: Visualizer, fft: ByteArray, samplingRate: Int) {
+                    previous = levels(fft, previous)
+                    val now = SystemClock.elapsedRealtime()
+                    if (previous.any { it > SignalFloor }) lastSignal = now
+                    onLevels(if (now - lastSignal > SilenceMs) null else previous)
+                }
 
-            override fun onWaveFormDataCapture(visualizer: Visualizer, waveform: ByteArray, samplingRate: Int) = Unit
-        },
-        Visualizer.getMaxCaptureRate(),
-        false,
-        true,
-    )
-    visualizer.enabled = true
+                override fun onWaveFormDataCapture(visualizer: Visualizer, waveform: ByteArray, samplingRate: Int) = Unit
+            },
+            Visualizer.getMaxCaptureRate(),
+            false,
+            true,
+        )
+        visualizer.enabled = true
+    } catch (error: Throwable) {
+        visualizer.release()
+        throw error
+    }
     return visualizer
 }

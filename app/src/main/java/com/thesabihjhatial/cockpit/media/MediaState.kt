@@ -52,7 +52,7 @@ fun rememberMediaState(bluetooth: BluetoothStatus?): MediaState {
     }
 
     val bluetoothAudio = if (bluetooth is BluetoothStatus.Connected && (musicActive || recent)) {
-        NowPlaying(null, bluetooth.deviceName, null, 0L, true, true, musicActive, 0L, 0L, source, 1f, unknownTitle)
+        NowPlaying(artist = bluetooth.deviceName, playing = musicActive, source = source, title = unknownTitle)
     } else {
         null
     }

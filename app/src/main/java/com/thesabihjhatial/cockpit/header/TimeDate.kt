@@ -22,17 +22,16 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.InterFamily
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 import java.time.LocalDateTime
 
 private const val DateWeight = 60f
-private const val TimeWeight = 40f
-
+private const val LineHeightRatio = 0.92f
 private const val MaxTimeSp = 84f
 private const val MinTimeSp = 44f
-private const val LineHeightRatio = 0.92f
+private const val TimeWeight = 40f
 
 private fun timeStyle(size: Float, color: Color) = TextStyle(
     color = color,
@@ -45,7 +44,7 @@ private fun timeStyle(size: Float, color: Color) = TextStyle(
 )
 
 @Composable
-private fun fittedTimeSize(text: String, maxWidth: Dp, color: Color): TextUnit {
+private fun fittedTimeSize(text: String, maxWidth: Dp): TextUnit {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
     return remember(text, maxWidth, density) {
@@ -54,7 +53,7 @@ private fun fittedTimeSize(text: String, maxWidth: Dp, color: Color): TextUnit {
         while (size > MinTimeSp) {
             val width = measurer.measure(
                 text = AnnotatedString(text),
-                style = timeStyle(size, color),
+                style = timeStyle(size, Color.Unspecified),
                 overflow = TextOverflow.Clip,
                 softWrap = false,
                 maxLines = 1,
@@ -68,7 +67,7 @@ private fun fittedTimeSize(text: String, maxWidth: Dp, color: Color): TextUnit {
 
 @Composable
 fun TimeDate(now: LocalDateTime, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val time = now.timeText()
 
     Row(
@@ -76,7 +75,7 @@ fun TimeDate(now: LocalDateTime, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BoxWithConstraints(modifier = Modifier.weight(TimeWeight)) {
-            val size = fittedTimeSize(time, maxWidth, colors.text)
+            val size = fittedTimeSize(time, maxWidth)
             Text(
                 text = time,
                 style = timeStyle(size.value, colors.text),

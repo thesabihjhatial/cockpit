@@ -40,28 +40,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Gauge
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val SplashMs = 1200
-
-private const val MaxSplashMs = 3000L
-
 private const val EnterDurationMs = 125
 private const val EnterScale = 0.96f
 private const val ExitDurationMs = 125
+private const val MaxSplashMs = 3000L
 private const val NeedleOvershoot = 18f
 private const val NeedleRestAngle = 0f
 private const val NeedleStartAngle = -120f
 private const val OvershootAtPercent = 55
 private const val RestAtPercent = 75
+private const val SplashMs = 1200
 
 @Composable
 private fun Splash() {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val needle = remember { Animatable(NeedleStartAngle) }
     val progress = remember { Animatable(0f) }
 
@@ -93,7 +91,7 @@ private fun Splash() {
                 needleAngle = needle.value,
                 arcColor = colors.accent,
                 needleColor = colors.text,
-                trackColor = colors.ring,
+                trackColor = colors.raised,
                 modifier = Modifier.size(104.dp),
             )
             Text(
@@ -115,7 +113,7 @@ private fun Splash() {
                     .width(180.dp)
                     .height(3.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(colors.ring),
+                    .background(colors.raised),
             ) {
                 Box(
                     modifier = Modifier

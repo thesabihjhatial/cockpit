@@ -4,7 +4,6 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -18,7 +17,6 @@ data class CockpitColors(
     val line: Color,
     val muted: Color,
     val raised: Color,
-    val ring: Color,
     val surface: Color,
     val text: Color,
     val text2: Color,
@@ -35,7 +33,6 @@ val CockpitPalette = CockpitColors(
     line = Color(0xFF3A3A3E),
     muted = Color(0xFF9E9EA6),
     raised = Color(0xFF262628),
-    ring = Color(0xFF262628),
     surface = Color(0xFF1A1A1C),
     text = Color(0xFFF2F2F3),
     text2 = Color(0xFFC7C7CC),
@@ -44,12 +41,9 @@ val CockpitPalette = CockpitColors(
     tileInk = Color(0xFF121214),
 )
 
-val LocalCockpitColors = compositionLocalOf { CockpitPalette }
-
 @Composable
 fun CockpitTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(
-        LocalCockpitColors provides CockpitPalette,
         LocalIndication provides PressIndication,
         LocalTextStyle provides TextStyle.Default.merge(
             SpanStyle(

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -22,22 +21,21 @@ import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.apps.AppInfo
 import com.thesabihjhatial.cockpit.apps.AppTile
 import com.thesabihjhatial.cockpit.apps.TileAction
+import com.thesabihjhatial.cockpit.apps.TileShape
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Icon
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
-
-private val SlotShape = RoundedCornerShape(16.dp)
 
 @Composable
 private fun EmptySlot(onClick: () -> Unit) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .clip(SlotShape)
+            .clip(TileShape)
             .background(colors.surface)
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp),

@@ -18,23 +18,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
-import com.thesabihjhatial.cockpit.ui.CockpitIcons
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Text
 
 private val ColumnGap = 16.dp
 
 @Composable
 private fun AccessPrompt(launching: String?, onAllow: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     Row(
         modifier = modifier,
@@ -65,48 +62,8 @@ private fun AccessPrompt(launching: String?, onAllow: () -> Unit, modifier: Modi
 }
 
 @Composable
-private fun Controls(nowPlaying: NowPlaying, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
-    val context = LocalContext.current
-
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        ControlButton(
-            icon = CockpitIcons.Previous,
-            description = stringResource(R.string.media_previous),
-            buttonSize = 72.dp,
-            iconSize = 34.dp,
-            tint = colors.text,
-            onClick = { nowPlaying.skipToPrevious(context) },
-            enabled = nowPlaying.hasPrevious,
-        )
-        ControlButton(
-            icon = if (nowPlaying.playing) CockpitIcons.Pause else CockpitIcons.Play,
-            description = stringResource(if (nowPlaying.playing) R.string.media_pause else R.string.media_play),
-            buttonSize = 104.dp,
-            iconSize = 40.dp,
-            tint = Color.White,
-            onClick = { nowPlaying.togglePlayback(context) },
-            background = colors.accent,
-        )
-        ControlButton(
-            icon = CockpitIcons.Next,
-            description = stringResource(R.string.media_next),
-            buttonSize = 72.dp,
-            iconSize = 34.dp,
-            tint = colors.text,
-            onClick = { nowPlaying.skipToNext(context) },
-            enabled = nowPlaying.hasNext,
-        )
-    }
-}
-
-@Composable
 private fun Info(nowPlaying: NowPlaying, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val position by rememberPosition(nowPlaying)
     val fraction = if (nowPlaying.duration > 0) position.toFloat() / nowPlaying.duration else 0f
 
@@ -165,7 +122,13 @@ fun NowPlayingPanel(
                     Art(nowPlaying, artModifier.size(artSize))
                     Info(nowPlaying, Modifier.width(artSize * 2 + ColumnGap).height(artSize))
                 }
-                Controls(nowPlaying, Modifier.width(artSize))
+                PlaybackControls(
+                    nowPlaying = nowPlaying,
+                    arrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                    centerSize = 104.dp,
+                    centerIconSize = 40.dp,
+                    modifier = Modifier.width(artSize),
+                )
             }
         }
     }

@@ -19,17 +19,6 @@
     <uses-permission android:name="com.yunovo.permission.BLUETOOTH_STATE_OBSERVER" />
     <uses-permission android:name="com.yunovo.permission.READ_BLUETOOTH_STATE" />
 
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.INFO" />
-        </intent>
-    </queries>
-
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"

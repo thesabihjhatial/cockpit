@@ -7,3 +7,4 @@ keystore.properties
 *.jks
 *.keystore
 releases/
+__pycache__/

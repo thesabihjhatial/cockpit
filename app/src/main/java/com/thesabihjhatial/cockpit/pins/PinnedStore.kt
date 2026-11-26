@@ -22,9 +22,6 @@ internal fun List<String?>.withoutId(id: String): List<String?> =
 internal fun List<String?>.withoutSlot(slot: Int): List<String?> =
     mapIndexed { index, pinned -> if (index == slot) null else pinned }
 
-internal fun List<String?>.withoutUnknown(validIds: Set<String>): List<String?> =
-    map { pinned -> pinned?.takeIf { it in validIds } }
-
 internal fun List<String?>.withPinned(id: String, slot: Int): List<String?> =
     mapIndexed { index, pinned -> if (index == slot) id else pinned.takeIf { it != id } }
 
@@ -42,8 +39,6 @@ class PinnedStore(context: Context) {
         val saved = preferences.getString(SlotsKey, null)?.split(Separator).orEmpty()
         return List(PinSlots) { saved.getOrNull(it)?.takeIf(String::isNotEmpty) }
     }
-
-    fun reconcile(validIds: Set<String>) = write(state.value.withoutUnknown(validIds))
 
     fun undock(id: String) = write(state.value.withoutId(id))
 

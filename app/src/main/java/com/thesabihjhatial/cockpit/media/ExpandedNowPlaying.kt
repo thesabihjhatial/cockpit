@@ -14,9 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -24,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Icon
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 
 @Composable
@@ -37,8 +35,7 @@ fun ColumnScope.ExpandedNowPlaying(
     onCollapse: () -> Unit,
     artModifier: Modifier = Modifier,
 ) {
-    val colors = LocalCockpitColors.current
-    val context = LocalContext.current
+    val colors = CockpitPalette
     val collapseLabel = stringResource(R.string.media_collapse)
     val position by rememberPosition(nowPlaying)
     val spectrum = rememberSpectrum(spectrumAllowed && nowPlaying.playing)
@@ -93,38 +90,12 @@ fun ColumnScope.ExpandedNowPlaying(
                 )
             }
         }
-        Row(
+        PlaybackControls(
+            nowPlaying = nowPlaying,
+            arrangement = Arrangement.spacedBy(40.dp, Alignment.CenterHorizontally),
+            centerSize = 96.dp,
+            centerIconSize = 38.dp,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(40.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ControlButton(
-                icon = CockpitIcons.Previous,
-                description = stringResource(R.string.media_previous),
-                buttonSize = 72.dp,
-                iconSize = 34.dp,
-                tint = colors.text,
-                onClick = { nowPlaying.skipToPrevious(context) },
-                enabled = nowPlaying.hasPrevious,
-            )
-            ControlButton(
-                icon = if (nowPlaying.playing) CockpitIcons.Pause else CockpitIcons.Play,
-                description = stringResource(if (nowPlaying.playing) R.string.media_pause else R.string.media_play),
-                buttonSize = 96.dp,
-                iconSize = 38.dp,
-                tint = Color.White,
-                onClick = { nowPlaying.togglePlayback(context) },
-                background = colors.accent,
-            )
-            ControlButton(
-                icon = CockpitIcons.Next,
-                description = stringResource(R.string.media_next),
-                buttonSize = 72.dp,
-                iconSize = 34.dp,
-                tint = colors.text,
-                onClick = { nowPlaying.skipToNext(context) },
-                enabled = nowPlaying.hasNext,
-            )
-        }
+        )
     }
 }

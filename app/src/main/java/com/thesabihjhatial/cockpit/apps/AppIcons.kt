@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -21,7 +22,14 @@ internal const val TileIconDp = 56
 
 private val cache = ConcurrentHashMap<String, ImageBitmap>()
 
-internal suspend fun loadAppIcon(context: Context, app: AppInfo, sizePx: Int): ImageBitmap? =
+private var version by mutableIntStateOf(0)
+
+internal fun invalidateAppIcons() {
+    cache.clear()
+    version++
+}
+
+private suspend fun loadAppIcon(context: Context, app: AppInfo, sizePx: Int): ImageBitmap? =
     withContext(Dispatchers.IO) {
         val key = app.id + "@" + sizePx
         cache[key]?.let { return@withContext it }
@@ -36,8 +44,8 @@ internal suspend fun loadAppIcon(context: Context, app: AppInfo, sizePx: Int): I
 internal fun rememberAppIcon(app: AppInfo): ImageBitmap? {
     val context = LocalContext.current
     val sizePx = with(LocalDensity.current) { TileIconDp.dp.roundToPx() }
-    var icon by remember(app.id, sizePx) { mutableStateOf(cache[app.id + "@" + sizePx]) }
-    LaunchedEffect(app.id, sizePx) {
+    var icon by remember(app.id, sizePx, version) { mutableStateOf(cache[app.id + "@" + sizePx]) }
+    LaunchedEffect(app.id, sizePx, version) {
         if (icon == null) icon = loadAppIcon(context, app, sizePx)
     }
     return icon

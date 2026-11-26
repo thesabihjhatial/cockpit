@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Velocity
 import com.thesabihjhatial.cockpit.R
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Text
 import kotlin.math.roundToInt
 
@@ -74,7 +74,7 @@ fun AppSheet(
     sheet: SheetState,
     modifier: Modifier = Modifier,
 ) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val connection = remember(sheet) { SheetScrollConnection(sheet) }
     val gridState = rememberLazyGridState()
     val addLabel = stringResource(R.string.dock_add_to)

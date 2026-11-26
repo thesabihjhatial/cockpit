@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,8 +39,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Icon
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 import kotlinx.coroutines.delay
 
@@ -56,7 +57,7 @@ internal fun Art(
     iconSize: Dp = 80.dp,
     shape: RoundedCornerShape = ArtShape,
 ) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val art = nowPlaying.art
 
     Box(
@@ -112,8 +113,50 @@ internal fun formatTime(millis: Long): String {
 }
 
 @Composable
+internal fun PlaybackControls(
+    nowPlaying: NowPlaying,
+    arrangement: Arrangement.Horizontal,
+    centerSize: Dp,
+    centerIconSize: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val colors = CockpitPalette
+    val context = LocalContext.current
+
+    Row(modifier = modifier, horizontalArrangement = arrangement, verticalAlignment = Alignment.CenterVertically) {
+        ControlButton(
+            icon = CockpitIcons.Previous,
+            description = stringResource(R.string.media_previous),
+            buttonSize = 72.dp,
+            iconSize = 34.dp,
+            tint = colors.text,
+            onClick = { nowPlaying.skipToPrevious(context) },
+            enabled = nowPlaying.hasPrevious,
+        )
+        ControlButton(
+            icon = if (nowPlaying.playing) CockpitIcons.Pause else CockpitIcons.Play,
+            description = stringResource(if (nowPlaying.playing) R.string.media_pause else R.string.media_play),
+            buttonSize = centerSize,
+            iconSize = centerIconSize,
+            tint = Color.White,
+            onClick = { nowPlaying.togglePlayback(context) },
+            background = colors.accent,
+        )
+        ControlButton(
+            icon = CockpitIcons.Next,
+            description = stringResource(R.string.media_next),
+            buttonSize = 72.dp,
+            iconSize = 34.dp,
+            tint = colors.text,
+            onClick = { nowPlaying.skipToNext(context) },
+            enabled = nowPlaying.hasNext,
+        )
+    }
+}
+
+@Composable
 internal fun Progress(fraction: Float, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val clamped = fraction.coerceIn(0f, 1f)
 
     Box(
@@ -135,7 +178,7 @@ internal fun Progress(fraction: Float, modifier: Modifier = Modifier) {
 internal fun rememberPosition(nowPlaying: NowPlaying): State<Long> {
     val position = remember(nowPlaying) { mutableStateOf(nowPlaying.currentPosition()) }
     LaunchedEffect(nowPlaying) {
-        while (true) {
+        while (nowPlaying.playing) {
             delay(PositionTickMs)
             position.value = nowPlaying.currentPosition()
         }
@@ -145,7 +188,7 @@ internal fun rememberPosition(nowPlaying: NowPlaying): State<Long> {
 
 @Composable
 internal fun TrackHeading(nowPlaying: NowPlaying, gap: Dp, modifier: Modifier = Modifier) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(gap)) {
         Row(

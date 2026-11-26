@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -30,7 +31,7 @@ fun DropdownMenu(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (!expanded) return
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     Popup(
         alignment = Alignment.TopEnd,
@@ -56,7 +57,7 @@ fun DropdownMenuItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     Row(
         modifier = modifier
@@ -66,7 +67,7 @@ fun DropdownMenuItem(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        androidx.compose.runtime.CompositionLocalProvider(
+        CompositionLocalProvider(
             LocalTextStyle provides LocalTextStyle.current.copy(
                 color = if (enabled) colors.text else colors.muted,
                 fontWeight = FontWeight.Medium,

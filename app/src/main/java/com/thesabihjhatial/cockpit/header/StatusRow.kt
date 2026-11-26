@@ -27,13 +27,13 @@ import com.thesabihjhatial.cockpit.R
 import com.thesabihjhatial.cockpit.settings.SettingsId
 import com.thesabihjhatial.cockpit.ui.CircularProgressIndicator
 import com.thesabihjhatial.cockpit.ui.CockpitIcons
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.Icon
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import com.thesabihjhatial.cockpit.ui.Text
 
 @Composable
 private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?, launching: String?, onRequest: () -> Unit) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     when {
         !access.granted -> StatusChip(
@@ -63,7 +63,7 @@ private fun BluetoothChip(access: PermissionAccess, status: BluetoothStatus?, la
 
 @Composable
 private fun SettingsButton(launching: String?, onClick: () -> Unit) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val label = stringResource(R.string.settings_title)
 
     Box(
@@ -141,7 +141,7 @@ fun StatusRow(
 
 @Composable
 private fun WifiChip(wifi: WifiStatus) {
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
 
     if (wifi.connected) {
         StatusChip(

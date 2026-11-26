@@ -34,7 +34,7 @@ private fun resolvedStyle(
     lineHeight: TextUnit,
     style: TextStyle,
 ): TextStyle {
-    val fallback = LocalCockpitColors.current.text
+    val fallback = CockpitPalette.text
     val resolved = when {
         color != Color.Unspecified -> color
         style.color != Color.Unspecified -> style.color
@@ -78,24 +78,22 @@ fun Text(
     maxLines: Int = Int.MAX_VALUE,
     style: TextStyle = LocalTextStyle.current,
 ) {
-    BasicText(
-        text = text,
+    Text(
+        text = AnnotatedString(text),
         modifier = modifier,
-        style = resolvedStyle(
-            color = color,
-            fontSize = fontSize,
-            fontStyle = fontStyle,
-            fontWeight = fontWeight,
-            fontFamily = fontFamily,
-            letterSpacing = letterSpacing,
-            textDecoration = textDecoration,
-            textAlign = textAlign,
-            lineHeight = lineHeight,
-            style = style,
-        ),
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
         maxLines = maxLines,
+        style = style,
     )
 }
 

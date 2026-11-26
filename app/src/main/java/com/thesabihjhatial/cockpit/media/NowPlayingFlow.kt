@@ -34,11 +34,6 @@ private class ArtCache {
     }
 }
 
-private fun Bitmap.fitted(): Bitmap {
-    val ratio = ArtMaxPx.toFloat() / max(width, height)
-    return if (ratio >= 1f) this else Bitmap.createScaledBitmap(this, (width * ratio).roundToInt(), (height * ratio).roundToInt(), true)
-}
-
 private fun activeControllerFlow(context: Context): Flow<MediaController?> = callbackFlow {
     val manager = context.getSystemService(MediaSessionManager::class.java)
     val listenerComponent = ComponentName(context, MediaListenerService::class.java)
@@ -51,6 +46,11 @@ private fun activeControllerFlow(context: Context): Flow<MediaController?> = cal
 private fun Context.appLabel(packageName: String): String = runCatching {
     packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
 }.getOrDefault(packageName)
+
+private fun Bitmap.fitted(): Bitmap {
+    val ratio = ArtMaxPx.toFloat() / max(width, height)
+    return if (ratio >= 1f) this else Bitmap.createScaledBitmap(this, (width * ratio).roundToInt(), (height * ratio).roundToInt(), true)
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun nowPlayingFlow(context: Context): Flow<NowPlaying?> =

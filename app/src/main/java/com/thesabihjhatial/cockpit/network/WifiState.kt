@@ -10,6 +10,5 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun rememberWifiStatus(locationGranted: Boolean): State<WifiStatus> {
     val context = LocalContext.current
     val flow = remember(locationGranted) { wifiStatusFlow(context) }
-    val initial = remember(locationGranted) { wifiStatus(context) }
-    return flow.collectAsStateWithLifecycle(initialValue = initial)
+    return flow.collectAsStateWithLifecycle(initialValue = WifiStatus(connected = false, name = null))
 }

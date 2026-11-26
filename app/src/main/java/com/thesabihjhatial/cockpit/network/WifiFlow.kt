@@ -19,16 +19,6 @@ private fun networkName(context: Context): String? =
         ?.removeSurrounding("\"")
         ?.takeUnless { it.isEmpty() || it == UnknownSsid }
 
-fun isWifiConnected(context: Context): Boolean {
-    val manager = context.getSystemService(ConnectivityManager::class.java)
-    return manager.getNetworkCapabilities(manager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-}
-
-fun wifiStatus(context: Context): WifiStatus {
-    val connected = isWifiConnected(context)
-    return WifiStatus(connected, if (connected) networkName(context) else null)
-}
-
 fun wifiStatusFlow(context: Context): Flow<WifiStatus> = callbackFlow {
     val manager = context.getSystemService(ConnectivityManager::class.java)
     val networks = ConcurrentHashMap.newKeySet<Network>()

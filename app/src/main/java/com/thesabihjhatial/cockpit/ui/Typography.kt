@@ -19,5 +19,4 @@ val InterFamily = FontFamily(
     inter(FontWeight.Medium),
     inter(FontWeight.SemiBold),
     inter(FontWeight.Bold),
-    inter(FontWeight.ExtraBold),
 )

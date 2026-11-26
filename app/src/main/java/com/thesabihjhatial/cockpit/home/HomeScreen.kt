@@ -53,12 +53,12 @@ import com.thesabihjhatial.cockpit.settings.MediaAccessId
 import com.thesabihjhatial.cockpit.settings.openNotificationAccessSettings
 import com.thesabihjhatial.cockpit.settings.openSystemSettings
 import com.thesabihjhatial.cockpit.settings.SettingsId
+import com.thesabihjhatial.cockpit.ui.CockpitPalette
 import com.thesabihjhatial.cockpit.ui.FadeInDelayMs
 import com.thesabihjhatial.cockpit.ui.FadeInMs
 import com.thesabihjhatial.cockpit.ui.FadeThrough
 import com.thesabihjhatial.cockpit.ui.FadeThroughEnter
 import com.thesabihjhatial.cockpit.ui.FadeThroughExit
-import com.thesabihjhatial.cockpit.ui.LocalCockpitColors
 import kotlinx.coroutines.delay
 
 private const val ArtKey = "art"
@@ -75,7 +75,7 @@ private val SheetPeek = 48.dp
 @Composable
 fun HomeScreen(ready: Boolean, viewModel: HomeViewModel) {
     val context = LocalContext.current
-    val colors = LocalCockpitColors.current
+    val colors = CockpitPalette
     val permissions = rememberPermissions(
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION,
